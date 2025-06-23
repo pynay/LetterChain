@@ -71,3 +71,7 @@ dmypy.json
 
 # dotenv
 .env
+
+
+resume.txt
+job.txt

@@ -129,10 +129,11 @@ Only extract what's present in the text - do not guess or hallucinate. Return ON
     try:
         parsed = json.loads(content)
         state["resume_info"] = parsed
+        state["user_name"] = parsed.get("name", "Candidate")
     except json.JSONDecodeError:
         print("Claude returned invalid JSON for resume. Response:", content)
         state["resume_info"] = {}  # Or handle as appropriate
-
+        state["user_name"] = "Candidate"
     return state
 
 
@@ -291,7 +292,8 @@ graph.add_edge("generate", "validate")
 
 # Conditional edge: validator controls flow
 def validate_branch(state):
-    if state["validation_result"]["valid"]:
+    result = state.get("validation_result", {})
+    if result.get("valid", False):
         return "export"
     else:
         return "generate"
