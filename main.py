@@ -53,7 +53,7 @@ claude_matcher = ChatAnthropic(
 
 
 claude_generator = ChatAnthropic(
-    model="claude-3-7-sonnet-20250219",
+    model="claude-opus-4-20250514",
     temperature=0.6,
     max_tokens=1024,
     anthropic_api_key=api_key
@@ -71,7 +71,7 @@ claude_validator = ChatAnthropic(
 parser = argparse.ArgumentParser(description="Your script description")
 parser.add_argument("--resume", type=str, required=True, help="Path to resume file")
 parser.add_argument("--job", type=str, required=True, help="Path to the job description file")
-parser.add_argument("--tone", type=str, default="formal", help="Tone of the cover letter")
+parser.add_argument("--tone", type=str, default="Emotionally intelligent, detailed, and clearly tailored to the role and mission. Shows initiative, reflection, and care — top-tier cover letter.", help="Tone of the cover letter")
 
 args = parser.parse_args()
 
@@ -237,8 +237,8 @@ def cover_letter_generator_node(state: dict) -> dict:
     experiences = state["matched_experiences"]
     user_name = state.get("user_name", "Candidate")
     prior_issues = state.get("prior_issues", [])
-    tone = job.get("tone", "formal")
-    
+    tone = job.get("tone", "Emotionally intelligent, detailed, and clearly tailored to the role and mission. Shows initiative, reflection, and care - top tier cover letter.")
+
     
     prompt = f"""
 You are a helpful assistant that writes tailored, one-page cover letters using structured data from a candidate's resume and a job description.
@@ -254,7 +254,7 @@ Your task is to generate a professional, specific, and concise cover letter that
 🛑 **Constraints**:
 - You may only use the information provided. Do NOT invent experiences, skills, or facts that are not explicitly included in the structured input.
 - Maintain a {tone} tone throughout.
-- Do not include headers, placeholders, or markdown formatting.
+- Do not include headers, placeholders, or markdown formatting, do not use ANY em dashes.
 - Keep the letter within 400–500 words.
 
 ### Job Description Summary:
@@ -284,20 +284,22 @@ def cover_letter_validator_node(state: dict) -> dict:
     tone = job.get("tone", "formal")
 
     prompt = f"""
-You are a quality assurance assistant for AI-generated cover letters.
+You are a meticulous quality assurance assistant for AI-generated cover letters. Your standards are high.
 
-Evaluate the following cover letter based on these criteria:
-1. Does it mention the company name and job title?
-2. Does it highlight at least two experiences that are relevant to the job?
-3. Does it match the required tone ("{tone}")?
-4. Is it specific and non-generic?
-5. Is it under one page (approx. 400–500 words)?
+Evaluate the following cover letter according to these strict criteria:
+
+1. **Company and Job Mention**: Does it clearly and correctly mention the exact company name and job title as stated in the job description?
+2. **Experience Relevance**: Does it highlight at least two distinct, concrete experiences that clearly align with the specific responsibilities or qualifications listed in the job?
+3. **Tone Accuracy**: Does it maintain the required tone ("{tone}") consistently, avoiding mechanical, stiff, or overly formal phrasing?
+4. **Specificity and Depth**: Is the letter tailored and thoughtful — does it avoid vague language, clichés, and filler? Does it demonstrate actual familiarity with the company, mission, or product?
+5. **Human and Personal Voice**: Does it sound like a real person wrote it? Is there genuine personality, motivation, or reflection conveyed, rather than formulaic or AI-sounding language?
+6. **Length Constraint**: Is the letter under one page (max ~500 words)?
 
 Return a JSON object with:
 - "valid": true or false
-- "issues": list of strings describing problems if any are found
+- "issues": a list of strings describing problems found, if any. Be blunt, specific, and critical.
 
-Only return the JSON object. Do not add commentary. Do not include triple backticks or any text before or after the JSON.
+Only return the JSON object. No commentary. No triple backticks.
 
 ### Cover Letter:
 {letter}
@@ -305,6 +307,7 @@ Only return the JSON object. Do not add commentary. Do not include triple backti
 ### Job Info:
 {job}
 """
+
 
     response = claude_validator.invoke(prompt)
     content = extract_json_from_markdown(response.content)

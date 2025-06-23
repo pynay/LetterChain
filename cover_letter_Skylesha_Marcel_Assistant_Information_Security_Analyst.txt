@@ -1,0 +1,14 @@
+Dear Team at UCLA IT Security Office,
+
+I am writing to express my strong interest in the Assistant Information Security Analyst position at the UCLA Information Security Office. As a current UCLA student with technical experience and a demonstrated commitment to supporting our campus community, I am excited about the opportunity to contribute to UCLA's cybersecurity efforts while developing my expertise in information security.
+
+My role as On-Campus Housing Council Representative for the UCLA Resident Government Council has prepared me well for the user support aspects of this position. In this capacity, I regularly advocate for and assist fellow students with various concerns, requiring me to communicate complex information clearly and patiently. This experience has taught me the importance of understanding user perspectives and providing thoughtful, accessible support, skills that would translate directly to helping UCLA community members navigate security matters and understand security protocols. Working closely with diverse stakeholders has also strengthened my ability to explain technical concepts in ways that resonate with different audiences.
+
+During my Software Developer Internship at Santa Clara University Frugal Innovation Hub, I gained hands-on experience with application development and technical problem-solving that would be valuable for vulnerability remediation and malware analysis. While developing software solutions, I learned to identify potential security weaknesses in code and understand how applications can be exploited. This technical foundation, combined with my analytical mindset, has prepared me to tackle the investigative aspects of security work, from analyzing suspicious activities to understanding attack vectors. The internship also taught me the importance of attention to detail when working with technical systems, a crucial skill for accurate ticket remediation and credential management.
+
+Throughout my experiences at UCLA, I have consistently demonstrated strong communication abilities, whether presenting to council members, collaborating with development teams, or supporting fellow students. This skill set aligns perfectly with your need for someone who can effectively communicate security updates through various platforms and work collaboratively with team members on security initiatives.
+
+I am genuinely excited about the opportunity to apply my technical knowledge and community-focused approach to protecting UCLA's digital infrastructure. Your emphasis on eagerness to learn resonates deeply with me, as I view this position as an invaluable chance to grow professionally while contributing to the security and wellbeing of the UCLA community I care about. I would welcome the opportunity to discuss how my unique combination of technical skills and user advocacy experience can support your team's mission.
+
+Sincerely,
+Skylesha Marcel
