@@ -7,7 +7,7 @@ from typing import TypedDict, List, Optional
 import re
 from dotenv import load_dotenv
 load_dotenv()
-
+print("hi")
 #setting up claude client
 api_key = os.getenv("ANTHROPIC_API_KEY")
 
