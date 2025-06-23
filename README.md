@@ -22,4 +22,4 @@ A command-line tool that generates tailored cover letters using your resume, job
 ```bash
 git clone https://github.com/yourusername/cover-letter-generator.git
 cd cover-letter-generator
-pip install -r requirements.txt
+pip install -r requirements.tx
