@@ -29,6 +29,44 @@ claude = ChatAnthropic(
     anthropic_api_key=api_key
 )
 
+claude_parser_job = ChatAnthropic(
+    model="claude-3-7-sonnet-20250219",
+    temperature=0.2,
+    max_tokens=512,
+    anthropic_api_key=api_key
+)
+
+claude_parser_resume = ChatAnthropic(
+    model="claude-3-7-sonnet-20250219",
+    temperature=0.2,
+    max_tokens=1024,
+    anthropic_api_key=api_key
+)
+
+
+claude_matcher = ChatAnthropic(
+    model="claude-3-7-sonnet-20250219",
+    temperature=0.3,
+    max_tokens=512,
+    anthropic_api_key=api_key
+)
+
+
+claude_generator = ChatAnthropic(
+    model="claude-3-7-sonnet-20250219",
+    temperature=0.6,
+    max_tokens=1024,
+    anthropic_api_key=api_key
+)
+
+
+claude_validator = ChatAnthropic(
+    model="claude-3-7-sonnet-20250219",
+    temperature=0.0,
+    max_tokens=512,
+    anthropic_api_key=api_key
+)
+
 #parser logic/parsing for job/resume text and tone
 parser = argparse.ArgumentParser(description="Your script description")
 parser.add_argument("--resume", type=str, required=True, help="Path to resume file")
@@ -78,7 +116,7 @@ Return ONLY the JSON object. Do not include triple backticks or any text before 
 ### Job Description:
 {job_posting}
 """
-    response = claude.invoke(prompt)
+    response = claude_parser_job.invoke(prompt)
     content = extract_json_from_markdown(response.content)
     print("Claude raw response in job_parser_node:", repr(content))
     if not content:
@@ -123,7 +161,7 @@ Only extract what's present in the text - do not guess or hallucinate. Return ON
 {resume_text}
 """
 
-    response = claude.invoke(prompt)
+    response = claude_parser_resume.invoke(prompt)
     content = extract_json_from_markdown(response.content)
     try:
         parsed = json.loads(content)
@@ -146,16 +184,33 @@ def relevance_matcher_node(state: dict) -> dict:
         return state
 
     prompt = f"""
-You are an assistant that compares a candidate's resume to a job description and identifies the most relevant experiences for tailoring a personalized cover letter.
+You are an assistant that compares a candidate's structured resume data with a job description to identify the most relevant content to highlight in a personalized cover letter.
 
-Please return a JSON object with the following fields:
+Your task is to select 2–3 **highly relevant experiences** that align well with the job's requirements. In addition to work experience, you may also consider:
 
-- "matched_experiences": A list of the 2–3 most relevant experiences from the resume that match the job. Each item should include:
-    - "title": The candidate's role
-    - "organization": Company or project name
-    - "reason": Why this experience is a strong match for the job
+- Technical coursework
+- Projects
+- Research
+- Teaching or instructional roles
+- Strong skill matches (if clearly demonstrated)
 
-Only use experiences actually listed in the resume. Do not invent any content. Return ONLY the JSON object. Do not include triple backticks or any text before or after the JSON.
+Each selected item must:
+- Be directly present in the resume data (DO NOT invent or hallucinate)
+- Map clearly to some aspect of the job description
+
+Return ONLY a JSON object in the following format:
+{{
+  "matched_experiences": [
+    {{
+      "type": "experience" | "project" | "coursework" | "instruction" | "skill",
+      "title": "...",
+      "organization": "...",  // For coursework use school, for projects use project name
+      "reason": "Why this is a strong match for the job, based on the job description"
+    }}
+  ]
+}}
+
+Do not include any explanations, markdown, or extra text — only return the raw JSON object.
 
 ### Resume Data:
 {resume_info}
@@ -163,8 +218,9 @@ Only use experiences actually listed in the resume. Do not invent any content. R
 ### Job Description:
 {job_info}
 """
+
     
-    response = claude.invoke(prompt)
+    response = claude_matcher.invoke(prompt)
     content = extract_json_from_markdown(response.content)
     try:
         print("Claude response in relevance_matcher_node:", content)
@@ -179,27 +235,35 @@ Only use experiences actually listed in the resume. Do not invent any content. R
 def cover_letter_generator_node(state: dict) -> dict:
     job = state["job_info"]
     experiences = state["matched_experiences"]
-    user_name = state.get("resume_info", {}).get("name", "Candidate")
+    user_name = state.get("user_name", "Candidate")
     prior_issues = state.get("prior_issues", [])
+    tone = job.get("tone", "formal")
+    
+    
     prompt = f"""
-You are a helpful assistant that writes personalized cover letters based on structured resume and job data.
+You are a helpful assistant that writes tailored, one-page cover letters using structured data from a candidate's resume and a job description.
 
-Write a one-page cover letter that:
-- Addresses the company and job title directly
-- Highlights 2–3 relevant experiences from the candidate
-- Uses a {tone} tone
-- Is specific, concise, and professional
+Your task is to generate a professional, specific, and concise cover letter that includes the following:
 
-Include the candidate's name at the end (e.g., "Sincerely, {user_name}").
+1. A formal greeting addressed directly to the company and job title (e.g., "Dear [Team/Manager] at {job.get('company', 'the company')}").
+2. An introductory paragraph that clearly states the position being applied for and expresses enthusiasm.
+3. Two to three **distinct and relevant experiences** from the candidate that directly match the job's responsibilities or values.
+4. A closing paragraph that reinforces interest, aligns with the company’s mission/values, and invites further discussion.
+5. A sign-off that ends with "Sincerely," followed by the candidate's full name: **{user_name}**
 
-Use only the experiences and job information provided — do not invent content.
+🛑 **Constraints**:
+- You may only use the information provided. Do NOT invent experiences, skills, or facts that are not explicitly included in the structured input.
+- Maintain a {tone} tone throughout.
+- Do not include headers, placeholders, or markdown formatting.
+- Keep the letter within 400–500 words.
 
-### Job Information:
+### Job Description Summary:
 {job}
 
-### Relevant Experiences:
+### Candidate's Matched Experiences:
 {experiences}
-"""  
+"""
+
 
     if prior_issues:
         issue_str = "\n".join(f"- {issue}" for issue in prior_issues)
@@ -209,7 +273,7 @@ The previous draft of this letter was rejected for the following reasons. Please
 {issue_str}
 """
 
-    response = claude.invoke(prompt)
+    response = claude_generator.invoke(prompt)
     state["cover_letter"] = response.content
     return state
 
@@ -242,7 +306,7 @@ Only return the JSON object. Do not add commentary. Do not include triple backti
 {job}
 """
 
-    response = claude.invoke(prompt)
+    response = claude_validator.invoke(prompt)
     content = extract_json_from_markdown(response.content)
     try:
         validation_result = json.loads(content)
@@ -256,7 +320,7 @@ Only return the JSON object. Do not add commentary. Do not include triple backti
 
 def exporter_node(state: dict) -> dict:
     cover_letter = state.get("cover_letter")
-    user_name = state.get("resume_info", {}).get("name", "Candidate")
+    user_name = state.get("user_name", "Candidate")
     job_title = state.get("job_info", {}).get("title", "the position")
 
     # Write to a file (optional)
@@ -302,3 +366,4 @@ graph.set_finish_point("export")
 
 app = graph.compile()
 final_state = app.invoke(initial_state)
+
