@@ -70,7 +70,6 @@ Please read the job description below and return a JSON object with the followin
 - "title"
 - "company"
 - "required_skills" (list)
-- "tone" (choose from: formal, casual, enthusiastic, corporate, technical)
 - "values" (list)
 - "summary" (2–3 sentences)
 
@@ -130,6 +129,7 @@ Only extract what's present in the text - do not guess or hallucinate. Return ON
         parsed = json.loads(content)
         state["resume_info"] = parsed
         state["user_name"] = parsed.get("name", "Candidate")
+        print("Resume Testing: ", content)
     except json.JSONDecodeError:
         print("Claude returned invalid JSON for resume. Response:", content)
         state["resume_info"] = {}  # Or handle as appropriate
@@ -179,10 +179,8 @@ Only use experiences actually listed in the resume. Do not invent any content. R
 def cover_letter_generator_node(state: dict) -> dict:
     job = state["job_info"]
     experiences = state["matched_experiences"]
-    user_name = state.get("user_name", "Candidate")  # Optional fallback
-    tone = job.get("tone", "formal")
+    user_name = state.get("resume_info", {}).get("name", "Candidate")
     prior_issues = state.get("prior_issues", [])
-
     prompt = f"""
 You are a helpful assistant that writes personalized cover letters based on structured resume and job data.
 
@@ -201,7 +199,7 @@ Use only the experiences and job information provided — do not invent content.
 
 ### Relevant Experiences:
 {experiences}
-"""
+"""  
 
     if prior_issues:
         issue_str = "\n".join(f"- {issue}" for issue in prior_issues)
