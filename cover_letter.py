@@ -5,6 +5,8 @@ from langgraph.graph import StateGraph
 import json
 from typing import TypedDict, List, Optional
 import re
+from dotenv import load_dotenv
+load_dotenv()
 
 #setting up claude client
 api_key = os.getenv("ANTHROPIC_API_KEY")
