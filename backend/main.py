@@ -16,7 +16,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://letterchain05.vercel.app"
+        "https://letterchain05.vercel.app",
+        "https://www.letterchain.fyi"
         ],  # or ["*"] for dev
     allow_methods=["*"],
     allow_headers=["*"],

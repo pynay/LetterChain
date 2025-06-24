@@ -285,10 +285,10 @@ export default function AgentsExplanation() {
           <div className="text-sm text-slate-600 font-mono">
             <div>validate_branch(state) →</div>
             <div className="ml-4">
-              if validation_result.get("valid", False):<br/>
-              <span className="ml-6 text-emerald-green">→ "export" (success)</span><br/>
+              if validation_result.get(&quot;valid&quot;, False):<br/>
+              <span className="ml-6 text-emerald-green">→ &quot;export&quot; (success)</span><br/>
               else:<br/>
-              <span className="ml-6 text-orange-600">→ "generate" (retry with prior_issues)</span>
+              <span className="ml-6 text-orange-600">→ &quot;generate&quot; (retry with prior_issues)</span>
             </div>
           </div>
         </motion.div>
