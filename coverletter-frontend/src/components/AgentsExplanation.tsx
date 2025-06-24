@@ -157,7 +157,7 @@ export default function AgentsExplanation() {
 
       {/* Technical Agent Details */}
       <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
-        {technicalAgents.map((agent, index) => (
+        {technicalAgents.map((agent) => (
           <motion.div
             key={agent.id}
             initial={{ opacity: 0, y: 20 }}
