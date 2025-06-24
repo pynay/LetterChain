@@ -342,8 +342,17 @@ def validate_branch(state):
     else:
         return "generate"
 
-graph.add_conditional_edges("validate", validate_branch)
 
+
+
+graph.add_conditional_edges(
+    "validate",
+    validate_branch,
+    {
+      "export": "export",
+           "generate": "generate"
+    }
+)
 graph.set_finish_point("export")
 
 app_graph = graph.compile()
