@@ -32,7 +32,7 @@ export default function Home() {
       data.append('job', jobFile);
       data.append('tone', formData.tone);
 
-      const response = await fetch('http://localhost:8000/generate', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate`, {
         method: 'POST',
         body: data,
       });
@@ -68,7 +68,7 @@ export default function Home() {
       data.append('user_feedback', feedback);
       data.append('current_cover_letter', coverLetter);
 
-      const response = await fetch('http://localhost:8000/feedback', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/feedback`, {
         method: 'POST',
         body: data,
       });
