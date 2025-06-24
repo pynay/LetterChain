@@ -144,11 +144,11 @@ export default function AgentsExplanation() {
             <div className="bg-slate-100 p-3 rounded text-sm font-mono">
               <div>Conditional Edge Logic:</div>
               <div className="ml-4 text-slate-600">
-                validate_branch(state) →<br/>
+                validate_branch(state) &rarr;<br/>
                 <span className="ml-4">if validation_result.valid:</span><br/>
-                <span className="ml-6">return "export"</span><br/>
+                <span className="ml-6">return &quot;export&quot;</span><br/>
                 <span className="ml-4">else:</span><br/>
-                <span className="ml-6">return "generate"</span>
+                <span className="ml-6">return &quot;generate&quot;</span>
               </div>
             </div>
           </div>
