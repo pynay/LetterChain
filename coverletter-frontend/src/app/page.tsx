@@ -43,7 +43,7 @@ export default function Home() {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
         buffer += value ? decoder.decode(value, { stream: true }) : '';
-        let lines = buffer.split(/\n\n/);
+        const lines = buffer.split(/\n\n/);
         buffer = lines.pop() || '';
         for (const line of lines) {
           if (line.startsWith('data: ')) {
@@ -53,7 +53,7 @@ export default function Home() {
               try {
                 const obj = JSON.parse(jsonStr);
                 setCoverLetter(obj.cover_letter);
-              } catch (e) {
+              } catch {
                 setError('Error parsing cover letter result');
               }
             } else if (msg === 'done') {
