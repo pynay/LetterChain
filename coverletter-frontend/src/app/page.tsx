@@ -13,39 +13,59 @@ export default function Home() {
   const [error, setError] = useState<string>('');
   const [originalFormData, setOriginalFormData] = useState<CoverLetterFormData | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [progressMessage, setProgressMessage] = useState<string>('');
 
   const handleGenerateCoverLetter = async (formData: CoverLetterFormData) => {
     setIsLoading(true);
     setError('');
     setShowFeedback(false);
-    
-    // Store original form data for feedback
+    setProgressMessage('');
+    setCoverLetter('');
     setOriginalFormData(formData);
-    
     try {
       const data = new FormData();
       data.append('resume', formData.resumeFile!);
-      
-      // Create a text file for job description
       const jobBlob = new Blob([formData.jobDescription], { type: 'text/plain' });
       const jobFile = new File([jobBlob], 'job_description.txt', { type: 'text/plain' });
       data.append('job', jobFile);
       data.append('tone', formData.tone);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate-stream`, {
         method: 'POST',
         body: data,
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.body) throw new Error('No response body');
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+      let done = false;
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        buffer += value ? decoder.decode(value, { stream: true }) : '';
+        let lines = buffer.split(/\n\n/);
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const msg = line.slice(6);
+            if (msg.startsWith('FINAL_COVER_LETTER::')) {
+              const jsonStr = msg.replace('FINAL_COVER_LETTER::', '');
+              try {
+                const obj = JSON.parse(jsonStr);
+                setCoverLetter(obj.cover_letter);
+              } catch (e) {
+                setError('Error parsing cover letter result');
+              }
+            } else if (msg === 'done') {
+              setIsLoading(false);
+            } else {
+              setProgressMessage(msg);
+            }
+          }
+        }
       }
-
-      const result = await response.text();
-      setCoverLetter(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -170,6 +190,7 @@ export default function Home() {
               onFeedback={handleFeedback}
               showFeedback={showFeedback}
               setShowFeedback={setShowFeedback}
+              progressMessage={progressMessage}
             />
           </motion.div>
         </motion.div>
