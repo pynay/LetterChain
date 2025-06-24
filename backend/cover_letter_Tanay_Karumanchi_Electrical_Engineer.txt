@@ -1,0 +1,16 @@
+Dear Electrical Engineering Team at Nextracker,
+
+I am writing to express my strong interest in the Electrical Engineer position at Nextracker. Your commitment to advancing the energy transition through intelligent solar tracker solutions deeply resonates with my passion for applying electrical engineering expertise to create sustainable technological innovations.
+
+As Payload Design Lead for the Ohlone Rocketry Team, I have gained hands-on experience directly relevant to your requirements. In this role, I designed and implemented mixed analog and digital circuits for our rocket payload systems, working extensively with ESP-32 microcontrollers for embedded applications. This position required me to collaborate closely with mechanical, software, and systems engineering teams to ensure seamless integration of electrical components. Through iterative PCB design and testing cycles, I developed robust solutions that could withstand the extreme conditions of high-altitude flight while maintaining reliable data transmission. This experience has prepared me to contribute immediately to your circuit design and embedded systems development needs.
+
+My role as Circuit Analysis Teaching Assistant at Ohlone College has strengthened both my technical foundation and communication abilities. Working with diverse groups of students, I developed clear methods for explaining complex electrical principles, from basic circuit theory to advanced analysis techniques. This position required me to troubleshoot student projects, identify design flaws, and guide learners toward optimal solutions. The experience of translating technical concepts into accessible explanations has honed my report-writing and documentation skills, ensuring I can effectively communicate design decisions and project progress to both technical and non-technical stakeholders.
+
+My PCB design expertise, developed through both academic coursework and practical application in the rocketry team, aligns perfectly with your technical requirements. I have experience with the complete design cycle, from schematic capture through layout optimization and design for manufacturability considerations.
+
+I am particularly drawn to Nextracker's holistic approach to sustainability through your five cornerstones of People, Community, Environment, Innovation, and Integrity. The opportunity to contribute to renewable energy infrastructure while working in a collaborative, diverse environment that values both technical excellence and environmental stewardship represents the ideal next step in my career. I am eager to bring my technical skills, collaborative approach, and passion for sustainable engineering to your team.
+
+Thank you for considering my application. I look forward to discussing how my experience in embedded systems, circuit design, and technical collaboration can contribute to Nextracker's mission of accelerating the global energy transition.
+
+Sincerely,
+Tanay Karumanchi
