@@ -1,5 +1,4 @@
 import os
-import argparse
 from langchain_anthropic import ChatAnthropic
 from langgraph.graph import StateGraph
 import json
@@ -67,29 +66,9 @@ claude_validator = ChatAnthropic(
     anthropic_api_key=api_key
 )
 
-#parser logic/parsing for job/resume text and tone
-parser = argparse.ArgumentParser(description="Your script description")
-parser.add_argument("--resume", type=str, required=True, help="Path to resume file")
-parser.add_argument("--job", type=str, required=True, help="Path to the job description file")
-parser.add_argument("--tone", type=str, default="Emotionally intelligent, detailed, and clearly tailored to the role and mission. Shows initiative, reflection, and care — top-tier cover letter.", help="Tone of the cover letter")
 
-args = parser.parse_args()
-
-with open(args.resume, "r") as f:
-    resume_text = f.read()
-
-with open(args.job, "r") as f:
-    job_text = f.read()
-
-tone = args.tone
 
 graph = StateGraph(CoverLetterState)
-
-initial_state = {
-    "job_posting": job_text, 
-    "resume_posting": resume_text,
-    "tone": tone
-}
 
 def extract_json_from_markdown(text):
     match = re.search(r"```(?:json)?\\n?(.*)```", text, re.DOTALL)
@@ -367,6 +346,5 @@ graph.add_conditional_edges("validate", validate_branch)
 
 graph.set_finish_point("export")
 
-app = graph.compile()
-final_state = app.invoke(initial_state)
+app_graph = graph.compile()
 
