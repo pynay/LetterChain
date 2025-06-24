@@ -13,7 +13,10 @@ import hashlib
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # or ["*"] for dev
+    allow_origins=[
+        "http://localhost:3000",
+        "https://letterchain05.vercel.app"
+        ],  # or ["*"] for dev
     allow_methods=["*"],
     allow_headers=["*"],
 )
