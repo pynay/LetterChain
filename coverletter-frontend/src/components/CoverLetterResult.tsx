@@ -132,7 +132,7 @@ export default function CoverLetterResult({
           >
             <h3 className="text-lg font-semibold text-emerald-green mb-2">Provide Feedback</h3>
             <p className="text-sm text-navy-blue mb-3">
-              Tell us what you'd like to improve about this cover letter. We'll regenerate it with your feedback.
+              Tell us what you&apos;d like to improve about this cover letter. We&apos;ll regenerate it with your feedback.
             </p>
             <form onSubmit={handleFeedbackSubmit} className="space-y-3">
               <textarea
