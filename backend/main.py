@@ -5,6 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import PyPDF2
 import io
 import json
+import hashlib
+import redis
 
 
 
@@ -16,6 +18,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Connect to Redis (default localhost:6379, db 0)
+redis_client = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+
+def make_cache_key(resume_text, job_text, tone):
+    m = hashlib.sha256()
+    m.update(resume_text.encode("utf-8"))
+    m.update(job_text.encode("utf-8"))
+    m.update(tone.encode("utf-8"))
+    return m.hexdigest()
 
 @app.post("/generate", response_class=PlainTextResponse)
 async def generate_cover_letter(
@@ -39,6 +51,11 @@ async def generate_cover_letter(
     # Handle job file (assume TXT)
     job_text = (await job.read()).decode(errors="ignore")
 
+    # Redis cache lookup
+    cache_key = make_cache_key(resume_text, job_text, tone)
+    cached = redis_client.get(cache_key)
+    if cached:
+        return cached
 
     state = {
         "resume_posting": resume_text,
@@ -47,7 +64,9 @@ async def generate_cover_letter(
     }
 
     result = app_graph.invoke(state)
-    return result["cover_letter"]
+    cover_letter = result["cover_letter"]
+    redis_client.set(cache_key, cover_letter, ex=60*60*24*7)  # 7 days expiry
+    return cover_letter
 
 @app.post("/feedback")
 async def provide_feedback(

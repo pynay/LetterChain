@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { motion } from 'framer-motion';
 import type { FormData as CoverLetterFormData } from '@/types';
 
 interface CoverLetterFormProps {
@@ -46,93 +47,163 @@ export default function CoverLetterForm({ onSubmit, isLoading }: CoverLetterForm
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.5 }
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Input Details</h2>
-      </div>
+    <motion.form
+      onSubmit={handleSubmit}
+      className="space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={itemVariants}>
+        <h2 className="text-2xl font-bold text-navy-blue mb-4 tracking-tight">Upload & Details</h2>
+      </motion.div>
 
       {/* Resume Upload */}
-      <div>
-        <label htmlFor="resume" className="block text-sm font-medium text-gray-700 mb-2">
+      <motion.div variants={itemVariants}>
+        <label htmlFor="resume" className="block text-sm font-medium text-navy-blue mb-2">
           Resume (PDF or TXT)
         </label>
-        <input
-          ref={fileInputRef}
-          type="file"
-          id="resume"
-          accept=".pdf,.txt"
-          onChange={handleFileChange}
-          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-          required
-        />
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            id="resume"
+            accept=".pdf,.txt"
+            onChange={handleFileChange}
+            className="file-input-styled"
+            required
+          />
+        </motion.div>
         {resumeFile && (
-          <p className="mt-2 text-sm text-green-600">
+          <motion.p
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="mt-2 text-sm text-emerald-green"
+          >
             ✓ {resumeFile.name} selected
-          </p>
+          </motion.p>
         )}
-      </div>
+      </motion.div>
 
       {/* Job Description */}
-      <div>
-        <label htmlFor="jobDescription" className="block text-sm font-medium text-gray-700 mb-2">
+      <motion.div variants={itemVariants}>
+        <label htmlFor="jobDescription" className="block text-sm font-medium text-navy-blue mb-2">
           Job Description
         </label>
-        <textarea
-          id="jobDescription"
-          value={jobDescription}
-          onChange={(e) => setJobDescription(e.target.value)}
-          rows={6}
-          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm resize-none"
-          placeholder="Paste the job description here..."
-          required
-        />
-      </div>
+        <motion.div
+          whileFocus={{ scale: 1.01 }}
+          transition={{ duration: 0.2 }}
+        >
+          <textarea
+            id="jobDescription"
+            value={jobDescription}
+            onChange={(e) => setJobDescription(e.target.value)}
+            rows={6}
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-green focus:ring-emerald-green sm:text-sm resize-none bg-white text-navy-blue"
+            placeholder="Paste the job description here..."
+            required
+          />
+        </motion.div>
+      </motion.div>
 
       {/* Tone Selection */}
-      <div>
-        <label htmlFor="tone" className="block text-sm font-medium text-gray-700 mb-2">
+      <motion.div variants={itemVariants}>
+        <label htmlFor="tone" className="block text-sm font-medium text-navy-blue mb-2">
           Writing Tone
         </label>
-        <select
-          id="tone"
-          value={tone}
-          onChange={(e) => setTone(e.target.value)}
-          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+        <motion.div
+          whileHover={{ scale: 1.01 }}
+          whileFocus={{ scale: 1.01 }}
         >
-          <option value="Emotionally intelligent, detailed, and clearly tailored to the role and mission. Shows initiative, reflection, and care — top-tier cover letter.">
-            Professional & Detailed
-          </option>
-          <option value="Confident, enthusiastic, and results-oriented. Emphasizes achievements and impact.">
-            Confident & Enthusiastic
-          </option>
-          <option value="Conversational, authentic, and personable. Shows personality while remaining professional.">
-            Conversational & Authentic
-          </option>
-          <option value="Concise, direct, and focused on key qualifications and achievements.">
-            Concise & Direct
-          </option>
-        </select>
-      </div>
+          <select
+            id="tone"
+            value={tone}
+            onChange={(e) => setTone(e.target.value)}
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-green focus:ring-emerald-green sm:text-sm bg-white text-navy-blue"
+          >
+            <option value="Emotionally intelligent, detailed, and clearly tailored to the role and mission. Shows initiative, reflection, and care — top-tier cover letter.">
+              Professional & Detailed
+            </option>
+            <option value="Confident, enthusiastic, and results-oriented. Emphasizes achievements and impact.">
+              Confident & Enthusiastic
+            </option>
+            <option value="Conversational, authentic, and personable. Shows personality while remaining professional.">
+              Conversational & Authentic
+            </option>
+            <option value="Concise, direct, and focused on key qualifications and achievements.">
+              Concise & Direct
+            </option>
+          </select>
+        </motion.div>
+      </motion.div>
 
       {/* Submit Button */}
-      <button
-        type="submit"
-        disabled={isLoading || !resumeFile || !jobDescription.trim()}
-        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isLoading ? (
-          <div className="flex items-center">
-            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Generating...
-          </div>
-        ) : (
-          'Generate Cover Letter'
-        )}
-      </button>
-    </form>
+      <motion.div variants={itemVariants}>
+        <motion.button
+          type="submit"
+          disabled={isLoading || !resumeFile || !jobDescription.trim()}
+          className="w-full btn-primary flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          whileHover={{ 
+            scale: 1.02,
+            boxShadow: "0 10px 25px rgba(0,0,0,0.15)"
+          }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ duration: 0.2 }}
+        >
+          {isLoading ? (
+            <motion.div 
+              className="flex items-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <motion.svg 
+                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" 
+                xmlns="http://www.w3.org/2000/svg" 
+                fill="none" 
+                viewBox="0 0 24 24"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              >
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </motion.svg>
+              Generating...
+            </motion.div>
+          ) : (
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              Generate Cover Letter
+            </motion.span>
+          )}
+        </motion.button>
+      </motion.div>
+    </motion.form>
   );
 } 
