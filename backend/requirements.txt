@@ -1,8 +1,9 @@
-fastapi
-uvicorn
-langgraph
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+python-dotenv==1.0.0
+langgraph==0.0.20
+PyPDF2==3.0.1
 langchain
 langchain-anthropic
 anthropic
-python-dotenv
-python-multipart

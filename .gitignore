@@ -1,3 +1,60 @@
+# Node.js
+node_modules/
+coverletter-frontend/node_modules/
+
+# Next.js
+.next/
+coverletter-frontend/.next/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# VSCode
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build output
+build/
+dist/
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.*
+
+# Temporary files
+temp/
+coverletter-frontend/temp/
+
+# Misc
+*.swp
+*.swo
+
+# Ignore coverage reports
+coverage/
+
+# Ignore local IDE settings
+.idea/
+
+# Ignore test output
+junit.xml
+
+# Ignore static build output
+out/
+
+# Ignore package lock files (optional, if you want to force lockfile updates)
+# package-lock.json
+# yarn.lock
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -8,9 +65,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -24,7 +79,6 @@ var/
 *.egg
 
 # Virtual environments
-.venv/
 venv/
 ENV/
 env/
@@ -63,15 +117,11 @@ coverage.xml
 .dmypy.json
 dmypy.json
 
-# VS Code
-.vscode/
-
 # Mac
 .DS_Store
 
 # dotenv
 .env
-
 
 resume.txt
 job.txt
