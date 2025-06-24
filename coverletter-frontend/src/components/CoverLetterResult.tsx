@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface CoverLetterResultProps {
@@ -22,6 +22,25 @@ export default function CoverLetterResult({
 }: CoverLetterResultProps) {
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isLoading) {
+      setProgress(0);
+      interval = setInterval(() => {
+        setProgress((old) => {
+          if (old < 90) return old + 10;
+          return old;
+        });
+      }, 400);
+    } else {
+      setProgress(100);
+      const timeout = setTimeout(() => setProgress(0), 500);
+      return () => clearTimeout(timeout);
+    }
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
   const handleCopy = async () => {
     try {
@@ -182,6 +201,14 @@ export default function CoverLetterResult({
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.3 }}
             >
+              <div className="w-full absolute top-0 left-0 px-4">
+                <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+                  <div
+                    className="bg-emerald-green h-2.5 rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              </div>
               <div className="text-center">
                 <motion.svg 
                   className="h-8 w-8 text-navy-blue mx-auto mb-4" 
