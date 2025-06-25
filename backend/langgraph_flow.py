@@ -92,6 +92,9 @@ def extract_json_from_markdown(text):
     # Fallback: return the text as is
     return text.strip()
 
+def safe_filename(s):
+    return re.sub(r'[^\w\-]', '_', s)
+
 #DEFINING ALL THE NODES FOR LANGGRAPH
 
 def input_validation_node(state: dict) -> dict:
@@ -152,8 +155,9 @@ Be strict but fair. If either input is clearly not a resume or job description, 
         else:
             state["validation_failed"] = False
             
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
         print("Invalid JSON from Claude in input_validation_node:", content)
+        print("Exception:", e)
         state["input_validation"] = {"resume_valid": False, "job_valid": False}
         state["validation_failed"] = True
         state["validation_error"] = {
@@ -392,8 +396,8 @@ def exporter_node(state: dict) -> dict:
     user_name = state.get("user_name", "Candidate")
     job_title = state.get("job_info", {}).get("title", "the position")
 
-    # Write to a file (optional)
-    filename = f"cover_letter_{user_name.replace(' ', '_')}_{job_title.replace(' ', '_')}.txt"
+    # Sanitize filename to avoid slashes and problematic characters
+    filename = f"cover_letter_{safe_filename(user_name)}_{safe_filename(job_title)}.txt"
     with open(filename, "w") as f:
         f.write(cover_letter)
 
