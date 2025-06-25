@@ -34,6 +34,12 @@ export default function Home() {
         method: 'POST',
         body: data,
       });
+      if (!response.ok) {
+        const errorText = await response.text();
+        setError(errorText || 'An error occurred');
+        setIsLoading(false);
+        return;
+      }
       if (!response.body) throw new Error('No response body');
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
