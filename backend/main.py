@@ -7,6 +7,8 @@ import io
 import json
 import hashlib
 import asyncio
+import time
+import random
 
 
 
@@ -113,58 +115,76 @@ async def generate_cover_letter_stream(
     tone: str = Form("Emotionally intelligent, detailed, and clearly tailored to the role and mission. Shows initiative, reflection, and care — top-tier cover letter.")
 ):
     async def event_generator():
-        # Step 1: Parse resume
-        yield f"data: Parsing resume...\n\n"
-        resume_bytes = await resume.read()
-        resume_text = ""
-        if resume.filename.lower().endswith(".pdf"):
+        try:
+            # Step 1: Parse resume
+            yield f"data: Parsing resume...\n\n"
+            resume_bytes = await resume.read()
+            resume_text = ""
+            if resume.filename.lower().endswith(".pdf"):
+                try:
+                    pdf_reader = PyPDF2.PdfReader(io.BytesIO(resume_bytes))
+                    resume_text = "\n".join(page.extract_text() or "" for page in pdf_reader.pages)
+                except Exception as e:
+                    yield f"data: Error reading PDF: {e}\n\n"
+                    return
+            else:
+                resume_text = resume_bytes.decode(errors="ignore")
+            await asyncio.sleep(0.2)
+
+            # Step 2: Parse job description
+            yield f"data: Parsing job description...\n\n"
+            job_text = (await job.read()).decode(errors="ignore")
+            await asyncio.sleep(0.2)
+
+            # Step 3: Matching experiences
+            yield f"data: Matching experiences...\n\n"
+            await asyncio.sleep(0.2)
+
+            # Step 4: Generating cover letter
+            yield f"data: Generating cover letter...\n\n"
+            state = {
+                "resume_posting": resume_text,
+                "job_posting": job_text,
+                "tone": tone
+            }
+            
             try:
-                pdf_reader = PyPDF2.PdfReader(io.BytesIO(resume_bytes))
-                resume_text = "\n".join(page.extract_text() or "" for page in pdf_reader.pages)
+                result = app_graph.invoke(state)
             except Exception as e:
-                yield f"data: Error reading PDF: {e}\n\n"
+                # Check if it's an API overload error (529 status code)
+                if "529" in str(e) or "overloaded" in str(e).lower():
+                    yield f"data: ERROR::Anthropic API is currently overloaded. Please try again in a few moments.\n\n"
+                elif "rate limit" in str(e).lower():
+                    yield f"data: ERROR::Rate limit exceeded. Please wait a moment and try again.\n\n"
+                else:
+                    yield f"data: ERROR::An unexpected error occurred: {str(e)}\n\n"
+                yield f"data: done\n\n"
                 return
-        else:
-            resume_text = resume_bytes.decode(errors="ignore")
-        await asyncio.sleep(0.2)
+                
+            await asyncio.sleep(0.2)
 
-        # Step 2: Parse job description
-        yield f"data: Parsing job description...\n\n"
-        job_text = (await job.read()).decode(errors="ignore")
-        await asyncio.sleep(0.2)
+            # Check for validation errors
+            if result.get("validation_failed"):
+                error_details = result.get("validation_error", {})
+                error_message = "Input validation failed:\n"
+                if error_details.get("resume_issues"):
+                    error_message += f"Resume issues: {', '.join(error_details['resume_issues'])}\n"
+                if error_details.get("job_issues"):
+                    error_message += f"Job description issues: {', '.join(error_details['job_issues'])}"
+                yield f"data: ERROR::{error_message}\n\n"
+                yield f"data: done\n\n"
+                return
 
-        # Step 3: Matching experiences
-        yield f"data: Matching experiences...\n\n"
-        await asyncio.sleep(0.2)
+            # Step 5: Validating output
+            yield f"data: Validating output...\n\n"
+            await asyncio.sleep(0.2)
 
-        # Step 4: Generating cover letter
-        yield f"data: Generating cover letter...\n\n"
-        state = {
-            "resume_posting": resume_text,
-            "job_posting": job_text,
-            "tone": tone
-        }
-        result = app_graph.invoke(state)
-        await asyncio.sleep(0.2)
-
-        # Check for validation errors
-        if result.get("validation_failed"):
-            error_details = result.get("validation_error", {})
-            error_message = "Input validation failed:\n"
-            if error_details.get("resume_issues"):
-                error_message += f"Resume issues: {', '.join(error_details['resume_issues'])}\n"
-            if error_details.get("job_issues"):
-                error_message += f"Job description issues: {', '.join(error_details['job_issues'])}"
-            yield f"data: ERROR::{error_message}\n\n"
+            # Final: Send cover letter
+            yield f"data: FINAL_COVER_LETTER::{json.dumps({'cover_letter': result['cover_letter']})}\n\n"
             yield f"data: done\n\n"
-            return
-
-        # Step 5: Validating output
-        yield f"data: Validating output...\n\n"
-        await asyncio.sleep(0.2)
-
-        # Final: Send cover letter
-        yield f"data: FINAL_COVER_LETTER::{json.dumps({'cover_letter': result['cover_letter']})}\n\n"
-        yield f"data: done\n\n"
+            
+        except Exception as e:
+            yield f"data: ERROR::An unexpected error occurred: {str(e)}\n\n"
+            yield f"data: done\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")

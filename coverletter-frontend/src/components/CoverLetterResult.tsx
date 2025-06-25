@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PDFDownloadLink, Document, Page, Text, StyleSheet } from '@react-pdf/renderer';
 
 interface CoverLetterResultProps {
   coverLetter: string;
@@ -11,6 +12,37 @@ interface CoverLetterResultProps {
   showFeedback: boolean;
   setShowFeedback: (show: boolean) => void;
   progressMessage?: string;
+}
+
+// PDF styles
+const pdfStyles = StyleSheet.create({
+  page: {
+    padding: 40,
+    fontSize: 12,
+    fontFamily: 'Helvetica',
+    lineHeight: 1.6,
+  },
+  heading: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    color: '#1A1A40',
+  },
+  body: {
+    fontSize: 12,
+    color: '#22223B',
+  },
+});
+
+function CoverLetterPDF({ coverLetter }: { coverLetter: string }) {
+  return (
+    <Document>
+      <Page size="A4" style={pdfStyles.page}>
+        <Text style={pdfStyles.heading}>Cover Letter</Text>
+        <Text style={pdfStyles.body}>{coverLetter}</Text>
+      </Page>
+    </Document>
+  );
 }
 
 export default function CoverLetterResult({ 
@@ -139,6 +171,20 @@ export default function CoverLetterResult({
               >
                 Download
               </motion.button>
+              <PDFDownloadLink
+                document={<CoverLetterPDF coverLetter={coverLetter} />}
+                fileName="cover_letter.pdf"
+              >
+                {({ loading }) => (
+                  <motion.button
+                    className="btn-accent px-3 py-1.5 text-xs w-24"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {loading ? 'Preparing PDF...' : 'Download as PDF'}
+                  </motion.button>
+                )}
+              </PDFDownloadLink>
             </>
           )}
         </div>

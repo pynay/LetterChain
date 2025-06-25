@@ -5,6 +5,8 @@ import json
 from typing import TypedDict, List, Optional
 import re
 from dotenv import load_dotenv
+import time
+import random
 load_dotenv()
 #setting up claude client
 api_key = os.getenv("ANTHROPIC_API_KEY")
@@ -25,58 +27,83 @@ class CoverLetterState(TypedDict, total=False):
     validation_failed: bool
     validation_error: dict
 
-claude = ChatAnthropic(
+def create_claude_with_retry(model, **kwargs):
+    """Create a Claude model with retry logic"""
+    return ChatAnthropic(
+        model=model,
+        anthropic_api_key=api_key,
+        **kwargs
+    )
+
+def invoke_with_retry(model, prompt, max_retries=3, base_delay=1):
+    """Invoke Claude with exponential backoff retry logic"""
+    for attempt in range(max_retries):
+        try:
+            return model.invoke(prompt)
+        except Exception as e:
+            # Check if it's an overload or rate limit error
+            if "529" in str(e) or "overloaded" in str(e).lower():
+                if attempt == max_retries - 1:
+                    raise e
+                
+                # Exponential backoff with jitter
+                delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+                print(f"API overloaded, retrying in {delay:.2f} seconds... (attempt {attempt + 1}/{max_retries})")
+                time.sleep(delay)
+            elif "rate limit" in str(e).lower():
+                if attempt == max_retries - 1:
+                    raise e
+                
+                delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+                print(f"Rate limit hit, retrying in {delay:.2f} seconds... (attempt {attempt + 1}/{max_retries})")
+                time.sleep(delay)
+            else:
+                # For other errors, don't retry
+                raise e
+    
+    raise Exception("Max retries exceeded")
+
+#setting up claude client
+claude = create_claude_with_retry(
     model="claude-3-7-sonnet-20250219",
-    max_tokens=1024,
-    anthropic_api_key=api_key
+    max_tokens=1024
 )
 
-claude_parser_job = ChatAnthropic(
+claude_parser_job = create_claude_with_retry(
     model="claude-3-7-sonnet-20250219",
     temperature=0.2,
-    max_tokens=512,
-    anthropic_api_key=api_key
+    max_tokens=512
 )
 
-claude_parser_resume = ChatAnthropic(
+claude_parser_resume = create_claude_with_retry(
     model="claude-3-7-sonnet-20250219",
     temperature=0.2,
-    max_tokens=1024,
-    anthropic_api_key=api_key
+    max_tokens=1024
 )
 
-
-claude_matcher = ChatAnthropic(
+claude_matcher = create_claude_with_retry(
     model="claude-3-7-sonnet-20250219",
     temperature=0.3,
-    max_tokens=512,
-    anthropic_api_key=api_key
+    max_tokens=512
 )
 
-
-claude_generator = ChatAnthropic(
+claude_generator = create_claude_with_retry(
     model="claude-opus-4-20250514",
     temperature=0.6,
-    max_tokens=1024,
-    anthropic_api_key=api_key
+    max_tokens=1024
 )
 
-
-claude_validator = ChatAnthropic(
+claude_validator = create_claude_with_retry(
     model="claude-3-7-sonnet-20250219",
     temperature=0.0,
-    max_tokens=512,
-    anthropic_api_key=api_key
+    max_tokens=512
 )
 
-claude_input_validation = ChatAnthropic(
+claude_input_validation = create_claude_with_retry(
     model="claude-3-5-haiku-20241022",
     temperature=0.0,
-    max_tokens=256,
-    anthropic_api_key=api_key
+    max_tokens=256
 )
-
-
 
 graph = StateGraph(CoverLetterState)
 
@@ -186,37 +213,48 @@ Return ONLY the JSON object. Do not include triple backticks or any text before 
 ### Job Description:
 {job_posting}
 """
-    response = claude_parser_job.invoke(prompt)
-    content = extract_json_from_markdown(response.content)
-    print("Claude raw response in job_parser_node:", repr(content))
-    if not content:
-        print("Claude returned empty response in job_parser_node.")
-        state["job_info"] = {}
-        return state
     try:
-        parsed = json.loads(content)
-    except json.JSONDecodeError:
-        print("Claude returned invalid JSON in job_parser_node:", content)
-        state["job_info"] = {}
+        response = invoke_with_retry(claude_parser_job, prompt)
+        content = extract_json_from_markdown(response.content)
+        print("Claude raw response in job_parser_node:", repr(content))
+        if not content:
+            print("Claude returned empty response in job_parser_node.")
+            state["job_info"] = {}
+            return state
+        try:
+            parsed = json.loads(content)
+        except json.JSONDecodeError:
+            print("Claude returned invalid JSON in job_parser_node:", content)
+            state["job_info"] = {}
+            return state
+        
+        state["job_info"] = parsed
         return state
-    state["job_info"] = parsed
-    return state
+    except Exception as e:
+        print(f"Error in job_parser_node: {e}")
+        state["job_info"] = {
+            "title": "Position",
+            "company": "Company",
+            "required_skills": [],
+            "values": [],
+            "summary": "Job description"
+        }
+        return state
 
 
 def resume_parser_node(state: dict) -> dict:
     resume_text = state["resume_posting"]
-
     prompt = f"""
-You are an intelligent assistant that extracts personal information from a candidate's resume to help make personalized cover letters.
+You are an intelligent assistant that extracts structured information from resumes to help generate personalized cover letters.
 
-Your task is to read the resume below and return a JSON object with the following fields:
+Please read the resume below and return a JSON object with the following fields:
 
-- "name": The candidate's full name, if present.
-- "summary": A 2–3 sentence overview of the candidate's background.
-- "experiences": A list of up to 5 relevant work experiences or projects. Each should include:
-    - "title": Role or position
-    - "organization": Company or institution
-    - "description": 1–2 sentence summary of what the person did
+- "name": The person's full name
+- "experiences": A list of work experiences, each containing:
+    - "title": Job title
+    - "organization": Company/organization name
+    - "duration": Time period (if available)
+    - "description": Brief description of role and achievements
     - "skills_used": List of technical or domain-specific skills used in that experience
 - "skills": A deduplicated list of skills explicitly or implicitly mentioned (e.g., Python, SQL, tutoring, machine learning, communication).
 - "education": A list of schools or degrees, including:
@@ -231,17 +269,29 @@ Only extract what's present in the text - do not guess or hallucinate. Return ON
 {resume_text}
 """
 
-    response = claude_parser_resume.invoke(prompt)
-    content = extract_json_from_markdown(response.content)
     try:
-        parsed = json.loads(content)
-        state["resume_info"] = parsed
-        state["user_name"] = parsed.get("name", "Candidate")
-        print("Resume Testing: ", content)
-    except json.JSONDecodeError:
-        print("Claude returned invalid JSON for resume. Response:", content)
-        state["resume_info"] = {}  # Or handle as appropriate
+        response = invoke_with_retry(claude_parser_resume, prompt)
+        content = extract_json_from_markdown(response.content)
+        try:
+            parsed = json.loads(content)
+            state["resume_info"] = parsed
+            state["user_name"] = parsed.get("name", "Candidate")
+            print("Resume Testing: ", content)
+        except json.JSONDecodeError:
+            print("Claude returned invalid JSON for resume. Response:", content)
+            state["resume_info"] = {}
+            state["user_name"] = "Candidate"
+    except Exception as e:
+        print(f"Error in resume_parser_node: {e}")
+        # Provide fallback behavior
+        state["resume_info"] = {
+            "name": "Candidate",
+            "experiences": [],
+            "skills": [],
+            "education": []
+        }
         state["user_name"] = "Candidate"
+    
     return state
 
 
