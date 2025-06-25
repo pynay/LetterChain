@@ -422,6 +422,7 @@ graph.add_conditional_edges(
     }
 )
 graph.set_finish_point("export")
+graph.set_finish_point("error")
 
 app_graph = graph.compile()
 
