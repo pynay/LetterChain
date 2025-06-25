@@ -50,6 +50,11 @@ async def generate_cover_letter(
         "tone": tone
     }
 
+    if (len(state["resume_posting"]) < 150 or len(state["job_posting"] < 150)): 
+         error_message = "Input validation failed:\n"
+         return PlainTextResponse(error_message, status_code=400)
+    
+    
     result = app_graph.invoke(state)
     if result.get("validation_failed"):
         error_details = result.get("validation_error", {})

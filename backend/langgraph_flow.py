@@ -123,7 +123,34 @@ Be strict but fair. If either input is clearly not a resume or job description, 
 {job_posting[:2000]}...
 
 
-"""    
+"""
+    response = claude_input_validation.invoke(prompt)
+    content = extract_json_from_markdown(response.content)
+    
+    try:
+        validation_result = json.loads(content)
+        state["input_validation"] = validation_result
+        
+        # Check if either input is invalid
+        if not validation_result.get("resume_valid", True) or not validation_result.get("job_valid", True):
+            state["validation_failed"] = True
+            state["validation_error"] = {
+                "resume_issues": validation_result.get("resume_issues", []),
+                "job_issues": validation_result.get("job_issues", [])
+            }
+        else:
+            state["validation_failed"] = False
+            
+    except json.JSONDecodeError:
+        print("Invalid JSON from Claude in input_validation_node:", content)
+        state["input_validation"] = {"resume_valid": False, "job_valid": False}
+        state["validation_failed"] = True
+        state["validation_error"] = {
+            "resume_issues": ["Failed to validate input"],
+            "job_issues": ["Failed to validate input"]
+        }
+    
+    return state
 
 
 def job_parser_node(state: dict) -> dict:
