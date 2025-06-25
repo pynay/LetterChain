@@ -81,9 +81,15 @@ claude_input_validation = ChatAnthropic(
 graph = StateGraph(CoverLetterState)
 
 def extract_json_from_markdown(text):
-    match = re.search(r"```(?:json)?\\n?(.*)```", text, re.DOTALL)
+    # Try to extract JSON from triple backticks
+    match = re.search(r"```(?:json)?\\n?(.*?)```", text, re.DOTALL)
     if match:
         return match.group(1).strip()
+    # Try to find the first { ... } block
+    match = re.search(r"({.*})", text, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    # Fallback: return the text as is
     return text.strip()
 
 #DEFINING ALL THE NODES FOR LANGGRAPH
@@ -129,6 +135,8 @@ Be strict but fair. If either input is clearly not a resume or job description, 
 """
     response = claude_input_validation.invoke(prompt)
     content = extract_json_from_markdown(response.content)
+    
+    print("Trying to parse:", repr(content))
     
     try:
         validation_result = json.loads(content)
