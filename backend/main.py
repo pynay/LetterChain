@@ -51,6 +51,14 @@ async def generate_cover_letter(
     }
 
     result = app_graph.invoke(state)
+    if result.get("validation_failed"):
+        error_details = result.get("validation_error", {})
+        error_message = "Input validation failed:\n"
+        if error_details.get("resume_issues"):
+            error_message += f"Resume issues: {', '.join(error_details['resume_issues'])}\n"
+        if error_details.get("job_issues"):
+            error_message += f"Job description issues: {', '.join(error_details['job_issues'])}"
+        return PlainTextResponse(error_message, status_code=400)
     return result["cover_letter"]
 
 @app.post("/feedback")

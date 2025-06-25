@@ -66,6 +66,13 @@ claude_validator = ChatAnthropic(
     anthropic_api_key=api_key
 )
 
+claude_input_validation = ChatAnthropic(
+    model="claude-3-5-haiku-20241022",
+    temperature=0.0,
+    max_tokens=256,
+    anthropic_api_key=api_key
+)
+
 
 
 graph = StateGraph(CoverLetterState)
@@ -77,6 +84,48 @@ def extract_json_from_markdown(text):
     return text.strip()
 
 #DEFINING ALL THE NODES FOR LANGGRAPH
+
+def input_validation_node(state: dict) -> dict:
+    resume_text = state["resume_posting"]
+    job_posting = state["job_posting"]
+
+    prompt = f"""
+You are a quality control assistant that validates whether uploaded documents are legitimate resumes and job descriptions.
+
+Analyze the two provided texts and determine if they are valid inputs for a cover letter generator.
+
+Return ONLY a JSON object with this structure:
+{{
+  "resume_valid": true/false,
+  "job_valid": true/false,
+  "resume_issues": ["list of specific problems with resume, if any"],
+  "job_issues": ["list of specific problems with job description, if any"]
+}}
+
+**Resume Validation Criteria:**
+- Contains personal information (name, contact details)
+- Lists work experience, education, or skills
+- Is not random text, code, or unrelated content
+- Has reasonable length (at least 100 characters)
+
+**Job Description Validation Criteria:**
+- Contains job title and company information
+- Lists responsibilities, requirements, or qualifications
+- Is not random text, code, or unrelated content
+- Has reasonable length (at least 100 characters)
+
+Be strict but fair. If either input is clearly not a resume or job description, mark it as invalid.
+
+### Resume Text:
+{resume_text[:2000]}...
+
+### Job Description Text:
+{job_posting[:2000]}...
+
+
+"""    
+
+
 def job_parser_node(state: dict) -> dict:
     job_posting = state["job_posting"]
     prompt = f"""
@@ -320,6 +369,7 @@ def exporter_node(state: dict) -> dict:
 
 
 # Add nodes
+graph.add_node("validate_input", input_validation_node)
 graph.add_node("parse_job", job_parser_node)
 graph.add_node("parse_resume", resume_parser_node)
 graph.add_node("match", relevance_matcher_node)
@@ -328,12 +378,17 @@ graph.add_node("validate", cover_letter_validator_node)
 graph.add_node("export", exporter_node)
 
 # Add edges
-graph.set_entry_point("parse_job")
+graph.set_entry_point("validate_input")
 graph.add_edge("parse_job", "parse_resume")
 graph.add_edge("parse_resume", "match")
 graph.add_edge("match", "generate")
 graph.add_edge("generate", "validate")
 
+def input_validation_branch(state): 
+    if state.get("validation_failed", False):
+        return "error"
+    else:
+        return "parse_job"
 # Conditional edge: validator controls flow
 def validate_branch(state):
     result = state.get("validation_result", {})
@@ -343,7 +398,13 @@ def validate_branch(state):
         return "generate"
 
 
-
+graph.add_conditional_edges(
+    "validate_input", input_validation_branch,
+    {
+        "error": "error",
+        "parse_job": "parse_job"
+    }
+)
 
 graph.add_conditional_edges(
     "validate",
