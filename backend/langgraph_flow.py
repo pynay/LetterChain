@@ -21,6 +21,9 @@ class CoverLetterState(TypedDict, total=False):
     prior_issues: Optional[List[str]]
     export_path: Optional[str]
     user_name: Optional[str]
+    input_validation: dict
+    validation_failed: bool
+    validation_error: dict
 
 claude = ChatAnthropic(
     model="claude-3-7-sonnet-20250219",
