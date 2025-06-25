@@ -59,6 +59,7 @@ export default function Home() {
               try {
                 const obj = JSON.parse(jsonStr);
                 setCoverLetter(obj.cover_letter);
+                setShowFeedback(true);
               } catch {
                 setError('Error parsing cover letter result');
               }
