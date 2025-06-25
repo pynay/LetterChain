@@ -23,6 +23,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+async def health_check():
+    return {"status": "ok", "message": "LetterChain Backend is running"}
+
 @app.post("/generate", response_class=PlainTextResponse)
 async def generate_cover_letter(
     resume: UploadFile,
