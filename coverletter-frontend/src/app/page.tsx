@@ -62,6 +62,10 @@ export default function Home() {
               } catch {
                 setError('Error parsing cover letter result');
               }
+            } else if (msg.startsWith('ERROR::')) {
+              const errorMsg = msg.replace('ERROR::', '');
+              setError(errorMsg);
+              setIsLoading(false);
             } else if (msg === 'done') {
               setIsLoading(false);
             } else {

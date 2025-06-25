@@ -49,11 +49,6 @@ async def generate_cover_letter(
         "job_posting": job_text,
         "tone": tone
     }
-
-    if (len(state["resume_posting"]) < 150 or len(state["job_posting"] < 150)): 
-         error_message = "Input validation failed:\n"
-         return PlainTextResponse(error_message, status_code=400)
-    
     
     result = app_graph.invoke(state)
     if result.get("validation_failed"):
@@ -147,6 +142,18 @@ async def generate_cover_letter_stream(
         }
         result = app_graph.invoke(state)
         await asyncio.sleep(0.2)
+
+        # Check for validation errors
+        if result.get("validation_failed"):
+            error_details = result.get("validation_error", {})
+            error_message = "Input validation failed:\n"
+            if error_details.get("resume_issues"):
+                error_message += f"Resume issues: {', '.join(error_details['resume_issues'])}\n"
+            if error_details.get("job_issues"):
+                error_message += f"Job description issues: {', '.join(error_details['job_issues'])}"
+            yield f"data: ERROR::{error_message}\n\n"
+            yield f"data: done\n\n"
+            return
 
         # Step 5: Validating output
         yield f"data: Validating output...\n\n"
