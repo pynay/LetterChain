@@ -276,7 +276,7 @@ Your task is to generate a professional, specific, and concise cover letter that
 1. A formal greeting addressed directly to the company and job title (e.g., "Dear [Team/Manager] at {job.get('company', 'the company')}").
 2. An introductory paragraph that clearly states the position being applied for and expresses enthusiasm.
 3. Two to three **distinct and relevant experiences** from the candidate that directly match the job's responsibilities or values.
-4. A closing paragraph that reinforces interest, aligns with the company’s mission/values, and invites further discussion.
+4. A closing paragraph that reinforces interest, aligns with the company's mission/values, and invites further discussion.
 5. A sign-off that ends with "Sincerely," followed by the candidate's full name: **{user_name}**
 
 🛑 **Constraints**:
@@ -376,6 +376,13 @@ graph.add_node("match", relevance_matcher_node)
 graph.add_node("generate", cover_letter_generator_node)
 graph.add_node("validate", cover_letter_validator_node)
 graph.add_node("export", exporter_node)
+# Add error node for validation failures
+
+def error_node(state: dict) -> dict:
+    # This node is reached if input validation fails
+    return state
+
+graph.add_node("error", error_node)
 
 # Add edges
 graph.set_entry_point("validate_input")
