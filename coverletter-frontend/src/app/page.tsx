@@ -11,6 +11,7 @@ export default function Home() {
   const [coverLetter, setCoverLetter] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const [hasError, setHasError] = useState(false);
   const [originalFormData, setOriginalFormData] = useState<CoverLetterFormData | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [progressMessage, setProgressMessage] = useState<string>('');
@@ -18,6 +19,7 @@ export default function Home() {
   const handleGenerateCoverLetter = async (formData: CoverLetterFormData) => {
     setIsLoading(true);
     setError('');
+    setHasError(false);
     setShowFeedback(false);
     setProgressMessage('');
     setCoverLetter('');
@@ -37,6 +39,7 @@ export default function Home() {
       if (!response.ok) {
         const errorText = await response.text();
         setError(errorText || 'An error occurred');
+        setHasError(true);
         setIsLoading(false);
         return;
       }
@@ -62,10 +65,12 @@ export default function Home() {
                 setShowFeedback(true);
               } catch {
                 setError('Error parsing cover letter result');
+                setHasError(true);
               }
             } else if (msg.startsWith('ERROR::')) {
               const errorMsg = msg.replace('ERROR::', '');
               setError(errorMsg);
+              setHasError(true);
               setIsLoading(false);
             } else if (msg === 'done') {
               setIsLoading(false);
@@ -77,6 +82,7 @@ export default function Home() {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      setHasError(true);
       setIsLoading(false);
     }
   };
@@ -147,7 +153,7 @@ export default function Home() {
     >
       <div className="max-w-xl mx-auto">
         {/* Show the form if not loading and no cover letter */}
-        {(!isLoading && !coverLetter) && (
+        {(!isLoading && !coverLetter && !hasError) && (
           <motion.div
             className="bg-white rounded-2xl shadow-lg border border-neutral-200/50 p-8"
             variants={itemVariants}
@@ -160,7 +166,7 @@ export default function Home() {
         )}
 
         {/* Show the result/progress if loading or after generation */}
-        {(isLoading || coverLetter) && (
+        {(isLoading || coverLetter || hasError) && (
           <motion.div
             className="relative bg-white rounded-2xl shadow-lg border border-neutral-200/50 p-8 max-w-4xl mx-auto"
             variants={itemVariants}
@@ -173,6 +179,7 @@ export default function Home() {
                   onClick={() => {
                     setCoverLetter('');
                     setError('');
+                    setHasError(false);
                     setShowFeedback(false);
                     setProgressMessage('');
                     setOriginalFormData(null);
