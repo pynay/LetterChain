@@ -88,10 +88,11 @@ claude_matcher = create_claude_with_retry(
 )
 
 generator_system_prompt = (
-    "You are a professional writing agent specialized in generating high-quality, human-like cover letters.\n"
-    "Your goal is to transform structured input (job info, resume details, tone, matched experiences) into a well-formed, emotionally intelligent letter.\n"
-    "You always write in a way that sounds personal, specific, and reflective — no templates or generic phrases.\n"
+    "You are a professional writing agent specialized in generating high-quality, concise, and direct cover letters.\n"
+    "Your goal is to transform structured input (job info, resume details, tone, matched experiences) into a well-formed, professional letter.\n"
+    "You always write in a way that is clear, specific, and impactful — never verbose, flowery, or overly warm.\n"
     "You do not hallucinate facts. You only use information given to you.\n"
+    "Prioritize clarity, professionalism, and brevity over emotional tone.\n"
     "Assume this draft will be reviewed and improved by the user. Focus on clarity and professional insight."
 )
 
@@ -292,7 +293,7 @@ Please read the resume below and return a JSON object with the following fields:
     - "field"
     - "graduation_year" (if available)
 
-Only extract what's present in the text - do not guess or hallucinate. Return ONLY the JSON object. Return ONLY the JSON object. Do not include triple backticks or any text before or after the JSON.
+Only extract what's present in the text - do not guess or hallucinate. Return ONLY the JSON object. Do not include triple backticks or any text before or after the JSON. Double-check that your output is valid JSON. Do not omit any commas or brackets.
 
 ### Resume:
 {resume_text}
@@ -310,8 +311,23 @@ Only extract what's present in the text - do not guess or hallucinate. Return ON
         except json.JSONDecodeError as e:
             print("Claude returned invalid JSON for resume. Response:", cleaned)
             print("Exception:", e)
-            state["resume_info"] = {}
-            state["user_name"] = "Candidate"
+            # Fallback: re-prompt Claude to fix the JSON
+            fix_prompt = f"""
+Your previous response was not valid JSON. Please return the same data as valid JSON only. Do not include any explanations, comments, or extra text. Only output a valid JSON object.\n\nHere is your previous response:\n\n{cleaned}
+"""
+            try:
+                fix_response = invoke_with_retry(claude_parser_resume, fix_prompt)
+                fix_content = extract_json_from_markdown(fix_response.content)
+                fix_cleaned = clean_json_string(fix_content)
+                parsed = json.loads(fix_cleaned)
+                state["resume_info"] = parsed
+                state["user_name"] = parsed.get("name", "Candidate")
+                print("Resume Fallback Testing: ", fix_cleaned)
+            except Exception as e2:
+                print("Fallback also failed. Response:", fix_cleaned if 'fix_cleaned' in locals() else fix_content)
+                print("Exception:", e2)
+                state["resume_info"] = {}
+                state["user_name"] = "Candidate"
     except Exception as e:
         print(f"Error in resume_parser_node: {e}")
         # Provide fallback behavior
@@ -388,11 +404,10 @@ def cover_letter_generator_node(state: dict) -> dict:
     experiences = state["matched_experiences"]
     user_name = state.get("user_name", "Candidate")
     prior_issues = state.get("prior_issues", [])
-    tone = job.get("tone", "Emotionally intelligent, detailed, and clearly tailored to the role and mission. Shows initiative, reflection, and care - top tier cover letter.")
+    tone = job.get("tone", "Professional, concise, and clearly tailored to the role. Direct, specific, and achievement-focused. Avoids filler, excessive warmth, or verbosity.")
 
-    
     prompt = f"""
-Write a 400–500 word cover letter using the information below.
+Write a 350–450 word cover letter using the information below.
 
 Requirements:
 1. Begin with a formal greeting: e.g., "Dear [Team/Manager] at {job.get('company', 'the company')}".
@@ -402,9 +417,12 @@ Requirements:
 5. End with: "Sincerely, {user_name}"
 
 Constraints:
+- Be concise and direct. Avoid flowery language, excessive warmth, or unnecessary detail.
 - Do not use em dashes, markdown, or placeholders.
 - Do not fabricate experiences or skills — only use the data provided.
 - Maintain a {tone} tone throughout.
+- Prioritize clarity and professionalism over emotional tone.
+- Keep the letter as concise as possible within the word limit.
 
 ### Job Description:
 {job}
@@ -412,7 +430,6 @@ Constraints:
 ### Matched Experiences:
 {experiences}
 """
-
 
     if prior_issues:
         issue_str = "\n".join(f"- {issue}" for issue in prior_issues)
