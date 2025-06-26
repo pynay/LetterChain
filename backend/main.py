@@ -1,4 +1,4 @@
-from langgraph_flow import app_graph
+from langgraph_flow import app_graph, resume_parser_node, job_parser_node
 from fastapi import FastAPI, UploadFile, Form, HTTPException, status, Request
 from fastapi.responses import PlainTextResponse, JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,7 +12,22 @@ import hashlib
 import asyncio
 import time
 import random
+import redis
+import hashlib
+import os
 
+def make_resume_cache_key(resume_text: str) -> str:
+    return "resume:" + hashlib.sha256(resume_text.encode()).hexdigest()
+
+
+def make_job_cache_key(job_text: str) -> str:
+    return "job:" + hashlib.sha256(job_text.encode()).hexdigest()
+
+
+
+
+redis_client = redis.from_url(os.environ.get("REDIS_URL", "redis://localhost:6379"),
+                              decode_responses=True)
 # Security constants
 MAX_FILE_SIZE = 2 * 1024 * 1024  # 2MB
 ALLOWED_EXTENSIONS = {".pdf", ".txt"}
@@ -91,10 +106,35 @@ async def generate_cover_letter(
     validate_upload(job, job_bytes, "Job description")
     job_text = job_bytes.decode(errors="ignore")
 
+    resume_cache_key = make_resume_cache_key(resume_text)
+    parsed_resume_json = redis_client.get(resume_cache_key)
+    if parsed_resume_json:
+        parsed_resume = json.loads(parsed_resume_json)
+    else:
+        resume_state = {"resume_posting": resume_text}
+        parsed_resume_state = resume_parser_node(resume_state)
+        parsed_resume = parsed_resume_state.get("resume_info", {})
+        redis_client.set(resume_cache_key, json.dumps(parsed_resume), ex=86400)
+
+
+    job_cache_key = make_job_cache_key(job_text)
+    parsed_job_json = redis_client.get(job_cache_key)
+    if parsed_job_json:
+        parsed_job = json.loads(parsed_job_json)
+    else:
+        # Parse job and cache the result
+        job_state = {"job_posting": job_text}
+        parsed_job_state = job_parser_node(job_state)
+        parsed_job = parsed_job_state.get("job_info", {})
+        redis_client.set(job_cache_key, json.dumps(parsed_job), ex=86400)  # 24 hours
+
     state = {
         "resume_posting": resume_text,
         "job_posting": job_text,
-        "tone": tone
+        "tone": tone,
+        "resume_info": parsed_resume,
+        "job_info": parsed_job,
+        "user_name": parsed_resume.get("name", "Candidate")
     }
     
     result = app_graph.invoke(state)
@@ -137,11 +177,33 @@ async def provide_feedback(
     validate_upload(job, job_bytes, "Job description")
     job_text = job_bytes.decode(errors="ignore")
 
+    resume_cache_key = make_resume_cache_key(resume_text)
+    parsed_resume_json = redis_client.get(resume_cache_key)
+    if parsed_resume_json:
+        parsed_resume = json.loads(parsed_resume_json)
+    else:
+        resume_state = {"resume_posting": resume_text}
+        parsed_resume_state = resume_parser_node(resume_state)
+        parsed_resume = parsed_resume_state.get("resume_info", {})
+        redis_client.set(resume_cache_key, json.dumps(parsed_resume), ex=86400)
+
+    job_cache_key = make_job_cache_key(job_text)
+    parsed_job_json = redis_client.get(job_cache_key)
+    if parsed_job_json:
+        parsed_job = json.loads(parsed_job_json)
+    else:
+        job_state = {"job_posting": job_text}
+        parsed_job_state = job_parser_node(job_state)
+        parsed_job = parsed_job_state.get("job_info", {})
+        redis_client.set(job_cache_key, json.dumps(parsed_job), ex=86400)
     # Create state with user feedback
     state = {
         "resume_posting": resume_text,
         "job_posting": job_text,
         "tone": tone,
+        "resume_info": parsed_resume,
+        "job_info": parsed_job,
+        "user_name": parsed_resume.get("name", "Candidate"),
         "prior_issues": [user_feedback],  # Add user feedback as prior issues
         "cover_letter": current_cover_letter  # Include current cover letter for context
     }
@@ -189,6 +251,27 @@ async def generate_cover_letter_stream(
             job_text = job_bytes.decode(errors="ignore")
             await asyncio.sleep(0.2)
 
+
+            resume_cache_key = make_resume_cache_key(resume_text)
+            parsed_resume_json = redis_client.get(resume_cache_key)
+            if parsed_resume_json:
+                parsed_resume = json.loads(parsed_resume_json)
+            else:
+                resume_state = {"resume_posting": resume_text}
+                parsed_resume_state = resume_parser_node(resume_state)
+                parsed_resume = parsed_resume_state.get("resume_info", {})
+                redis_client.set(resume_cache_key, json.dumps(parsed_resume), ex=86400)
+
+            job_cache_key = make_job_cache_key(job_text)
+            parsed_job_json = redis_client.get(job_cache_key)
+            if parsed_job_json:
+                parsed_job = json.loads(parsed_job_json)
+            else:
+                job_state = {"job_posting": job_text}
+                parsed_job_state = job_parser_node(job_state)
+                parsed_job = parsed_job_state.get("job_info", {})
+                redis_client.set(job_cache_key, json.dumps(parsed_job), ex=86400)
+
             # Step 3: Matching experiences
             yield f"data: Matching experiences...\n\n"
             await asyncio.sleep(0.2)
@@ -198,7 +281,10 @@ async def generate_cover_letter_stream(
             state = {
                 "resume_posting": resume_text,
                 "job_posting": job_text,
-                "tone": tone
+                "tone": tone,
+                "resume_info": parsed_resume,
+                "job_info": parsed_job,
+                "user_name": parsed_resume.get("name", "Candidate")
             }
             
             try:

@@ -226,6 +226,8 @@ Be strict but fair. If either input is clearly not a resume or job description, 
 
 
 def job_parser_node(state: dict) -> dict:
+    if "job_info" in state and state["job_info"]:
+        return state
     job_posting = state["job_posting"]
     prompt = f"""
 You are an intelligent assistant helping generate personalized cover letters by extracting structured information from job postings.
@@ -272,6 +274,11 @@ Return ONLY the JSON object. Do not include triple backticks or any text before 
 
 
 def resume_parser_node(state: dict) -> dict:
+    if "resume_info" in state and state["resume_info"]:
+        # Also set user_name if it's not already set
+        if "user_name" not in state and state["resume_info"].get("name"):
+            state["user_name"] = state["resume_info"]["name"]
+        return state 
     resume_text = state["resume_posting"]
     prompt = f"""
 You are an intelligent assistant that extracts structured information from resumes to help generate personalized cover letters.

@@ -8,3 +8,4 @@ langchain
 langchain-anthropic
 anthropic
 slowapi
+redis
