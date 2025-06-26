@@ -427,16 +427,20 @@ Requirements:
 4. Closing: reinforce interest, connect to the company's mission, and invite further discussion.
 5. End with: "Sincerely, {user_name}"
 
-**CRITICAL GUIDELINES:**
+**CRITICAL HONESTY GUIDELINES:**
+- **NEVER fabricate, invent, or stretch experience** - only use information that is explicitly provided
+- **Be completely truthful** about the candidate's actual experience and skills
+- **If the candidate lacks specific experience, acknowledge it honestly** and focus on transferable skills
+- **Do not claim expertise in technologies or skills not mentioned** in the resume
 - **Focus on transferable skills** - Show how existing experience applies to the new role
 - **Be specific about skills** - Programming, analysis, teamwork, communication, etc.
 - **Highlight learning ability** - Demonstrate adaptability and growth mindset
-- **Use concrete examples** - Reference specific projects, courses, or experiences
+- **Use concrete examples** - Reference specific projects, courses, or experiences from the resume
 - **Maintain a {tone} tone throughout**
 - **Be concise and direct, avoiding flowery language**
-- **NEVER fabricate or stretch experience** - only use information that is actually provided
 - **Emphasize potential and transferability** rather than direct experience matches
 - **If no exact matches, focus on transferable skills** from their existing background
+- **PRIORITIZE HONESTY OVER PERFECTION** - It's better to be honest about limitations than to fabricate experience
 
 ### Job Description:
 {job}
@@ -464,11 +468,11 @@ def cover_letter_validator_node(state: dict) -> dict:
     tone = job.get("tone", "formal")
 
     validator_prompt = f"""
-You are a quality assurance assistant for AI-generated cover letters. Your goal is to ensure letters are professional, honest, and demonstrate the candidate's potential to contribute to the role.
+You are a quality assurance assistant for AI-generated cover letters. Your PRIMARY goal is to ensure letters are HONEST and truthful.
 
 Evaluate the letter below using these criteria:
 
-1. **Honesty and Authenticity** — Does the letter honestly represent the candidate's experience without fabrication?
+1. **HONESTY AND TRUTHFULNESS** — Does the letter honestly represent the candidate's experience without ANY fabrication? This is the MOST IMPORTANT criterion.
 2. **Company and Job Mention** — Does it clearly mention the company name and job title?
 3. **Transferable Skills Focus** — Does it effectively connect the candidate's background to the job through transferable skills? For example:
    - Programming experience → web development skills
@@ -479,11 +483,13 @@ Evaluate the letter below using these criteria:
 4. **Tone and Professionalism** — Is the tone appropriate and professional?
 5. **Length and Structure** — Is it well-structured and appropriately sized (350-500 words)?
 
-**Important**: 
-- **Accept letters** that demonstrate relevant transferable skills and genuine interest
-- **Reject letters** that make false claims about experience or skills
+**CRITICAL HONESTY RULES**: 
+- **REJECT letters** that make ANY false claims about experience, skills, or qualifications
+- **REJECT letters** that fabricate or invent experience not present in the resume
+- **REJECT letters** that claim expertise in technologies not mentioned
+- **ACCEPT letters** that are honest about limitations and focus on transferable skills
+- **PRIORITIZE HONESTY OVER PERFECTION** - A truthful letter with gaps is better than a fabricated perfect letter
 - **Be flexible** about direct experience requirements if the candidate shows relevant transferable skills
-- **Focus on potential and transferability** rather than exact experience matches
 
 Return a JSON object with:
 - "valid": true or false
