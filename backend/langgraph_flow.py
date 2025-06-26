@@ -246,7 +246,6 @@ Return ONLY the JSON object. Do not include triple backticks or any text before 
     try:
         response = invoke_with_retry(claude_parser_job, prompt)
         content = extract_json_from_markdown(response.content)
-        print("Claude raw response in job_parser_node:", repr(content))
         if not content:
             print("Claude returned empty response in job_parser_node.")
             state["job_info"] = {}
@@ -254,7 +253,7 @@ Return ONLY the JSON object. Do not include triple backticks or any text before 
         try:
             parsed = json.loads(content)
         except json.JSONDecodeError:
-            print("Claude returned invalid JSON in job_parser_node:", content)
+            print("Claude returned invalid JSON in job_parser_node")
             state["job_info"] = {}
             return state
         
@@ -307,9 +306,9 @@ Only extract what's present in the text - do not guess or hallucinate. Return ON
             parsed = json.loads(cleaned)
             state["resume_info"] = parsed
             state["user_name"] = parsed.get("name", "Candidate")
-            print("Resume Testing: ", cleaned)
+            print("Resume parsed successfully")
         except json.JSONDecodeError as e:
-            print("Claude returned invalid JSON for resume. Response:", cleaned)
+            print("Claude returned invalid JSON for resume")
             print("Exception:", e)
             # Fallback: re-prompt Claude to fix the JSON
             fix_prompt = f"""
@@ -322,9 +321,9 @@ Your previous response was not valid JSON. Please return the same data as valid 
                 parsed = json.loads(fix_cleaned)
                 state["resume_info"] = parsed
                 state["user_name"] = parsed.get("name", "Candidate")
-                print("Resume Fallback Testing: ", fix_cleaned)
+                print("Resume parsed successfully (fallback)")
             except Exception as e2:
-                print("Fallback also failed. Response:", fix_cleaned if 'fix_cleaned' in locals() else fix_content)
+                print("Fallback also failed")
                 print("Exception:", e2)
                 state["resume_info"] = {}
                 state["user_name"] = "Candidate"
@@ -390,11 +389,11 @@ Do not include any explanations, markdown, or extra text — only return the raw
     response = claude_matcher.invoke(prompt)
     content = extract_json_from_markdown(response.content)
     try:
-        print("Claude response in relevance_matcher_node:", content)
+        print("Relevance matching completed successfully")
         parsed = json.loads(content)
         state["matched_experiences"] = parsed.get("matched_experiences", [])
     except json.JSONDecodeError:
-        print("Invalid JSON from Claude in relevance_matcher_node:", content)
+        print("Invalid JSON from Claude in relevance_matcher_node")
         state["matched_experiences"] = []
     return state
 
