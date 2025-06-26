@@ -85,6 +85,9 @@ export default function CoverLetterForm({ onSubmit, isLoading }: CoverLetterForm
         <label htmlFor="resume" className="block text-sm font-medium text-navy-blue mb-2">
           Resume (PDF or TXT)
         </label>
+        <p className="text-xs text-slate-gray mb-2">
+          Upload your resume in PDF or text format. We'll extract your experience and skills to match with the job.
+        </p>
         <motion.div
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -108,6 +111,9 @@ export default function CoverLetterForm({ onSubmit, isLoading }: CoverLetterForm
             ✓ {resumeFile.name} selected
           </motion.p>
         )}
+        <p className="text-xs text-slate-gray mt-1">
+          💡 <span className="font-medium">Tip:</span> Make sure your resume includes your work experience, skills, and education
+        </p>
       </motion.div>
 
       {/* Job Description */}
@@ -115,6 +121,9 @@ export default function CoverLetterForm({ onSubmit, isLoading }: CoverLetterForm
         <label htmlFor="jobDescription" className="block text-sm font-medium text-navy-blue mb-2">
           Job Description
         </label>
+        <p className="text-xs text-slate-gray mb-2">
+          Paste the complete job description from LinkedIn, company website, or job board.
+        </p>
         <motion.div
           whileFocus={{ scale: 1.01 }}
           transition={{ duration: 0.2 }}
@@ -125,10 +134,13 @@ export default function CoverLetterForm({ onSubmit, isLoading }: CoverLetterForm
             onChange={(e) => setJobDescription(e.target.value)}
             rows={6}
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-green focus:ring-emerald-green sm:text-sm resize-none bg-white text-navy-blue"
-            placeholder="Paste the job description here..."
+            placeholder="Paste the full job description here... Include job title, company name, responsibilities, requirements, and any company information."
             required
           />
         </motion.div>
+        <p className="text-xs text-slate-gray mt-1">
+          💡 <span className="font-medium">Tip:</span> The more detailed the job description, the better we can tailor your cover letter
+        </p>
       </motion.div>
 
       {/* Tone Selection */}
@@ -136,6 +148,9 @@ export default function CoverLetterForm({ onSubmit, isLoading }: CoverLetterForm
         <label htmlFor="tone" className="block text-sm font-medium text-navy-blue mb-2">
           Writing Tone
         </label>
+        <p className="text-xs text-slate-gray mb-2">
+          Choose the tone that best matches your personality and the company culture.
+        </p>
         <motion.div
           whileHover={{ scale: 1.01 }}
           whileFocus={{ scale: 1.01 }}
@@ -147,16 +162,16 @@ export default function CoverLetterForm({ onSubmit, isLoading }: CoverLetterForm
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-green focus:ring-emerald-green sm:text-sm bg-white text-navy-blue"
           >
             <option value="Emotionally intelligent, detailed, and clearly tailored to the role and mission. Shows initiative, reflection, and care — top-tier cover letter.">
-              Professional & Detailed
+              🧠 Professional & Detailed — Insightful and thorough
             </option>
             <option value="Confident, enthusiastic, and results-oriented. Emphasizes achievements and impact.">
-              Confident & Enthusiastic
+              💪 Confident & Enthusiastic — Bold and achievement-focused
             </option>
             <option value="Conversational, authentic, and personable. Shows personality while remaining professional.">
-              Conversational & Authentic
+              💬 Conversational & Authentic — Warm and personable
             </option>
             <option value="Concise, direct, and focused on key qualifications and achievements.">
-              Concise & Direct
+              ⚡ Concise & Direct — Clear and to the point
             </option>
           </select>
         </motion.div>

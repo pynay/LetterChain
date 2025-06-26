@@ -56,6 +56,8 @@ export default function CoverLetterResult({
 }: CoverLetterResultProps) {
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const [showRating, setShowRating] = useState(false);
+  const [rating, setRating] = useState<number | null>(null);
 
   const handleCopy = async () => {
     try {
@@ -110,13 +112,13 @@ export default function CoverLetterResult({
 
   // Progress bar steps for LangGraph flow
   const progressSteps = [
-    "Parsing resume...",
-    "Parsing job description...",
-    "Matching experiences...",
-    "Generating cover letter...",
-    "Validating output..."
+    { step: "Parsing resume...", icon: "📄", description: "Extracting your experience and skills" },
+    { step: "Parsing job description...", icon: "🏢", description: "Analyzing job requirements" },
+    { step: "Matching experiences...", icon: "🎯", description: "Finding relevant matches" },
+    { step: "Generating cover letter...", icon: "✍️", description: "Creating your personalized letter" },
+    { step: "Validating output...", icon: "✅", description: "Quality checking the result" }
   ];
-  const currentStep = progressSteps.findIndex(step => progressMessage && progressMessage.trim().startsWith(step));
+  const currentStep = progressSteps.findIndex(step => progressMessage && progressMessage.trim().startsWith(step.step));
   const progressPercent = currentStep === -1 ? 0 : ((currentStep + 1) / progressSteps.length) * 100;
 
   return (
@@ -246,30 +248,70 @@ export default function CoverLetterResult({
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
               >
-                {/* Progress Bar */}
+                {/* Enhanced Progress Steps */}
+                <div className="w-full max-w-md mb-6">
+                  <div className="space-y-3">
+                    {progressSteps.map((step, index) => {
+                      const isActive = index === currentStep;
+                      const isCompleted = index < currentStep;
+                      const isPending = index > currentStep;
+                      
+                      return (
+                        <motion.div
+                          key={index}
+                          className={`flex items-center space-x-3 p-2 rounded-lg transition-all duration-300 ${
+                            isActive ? 'bg-emerald-green/10 border border-emerald-green' :
+                            isCompleted ? 'bg-emerald-green/5' : 'bg-gray-50'
+                          }`}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                        >
+                          <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                            isActive ? 'bg-emerald-green text-white animate-pulse' :
+                            isCompleted ? 'bg-emerald-green text-white' : 'bg-gray-200 text-gray-500'
+                          }`}>
+                            {isCompleted ? '✓' : step.icon}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm font-medium ${
+                              isActive ? 'text-emerald-green' :
+                              isCompleted ? 'text-navy-blue' : 'text-gray-500'
+                            }`}>
+                              {step.step}
+                            </p>
+                            <p className={`text-xs ${
+                              isActive ? 'text-emerald-green' : 'text-gray-400'
+                            }`}>
+                              {step.description}
+                            </p>
+                          </div>
+                          {isActive && (
+                            <motion.div
+                              className="w-2 h-2 bg-emerald-green rounded-full"
+                              animate={{ scale: [1, 1.5, 1] }}
+                              transition={{ duration: 1, repeat: Infinity }}
+                            />
+                          )}
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                {/* Overall Progress Bar */}
                 <div className="w-full max-w-xs mb-4">
                   <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-2 bg-emerald-green transition-all duration-300"
-                      style={{ width: `${progressPercent}%` }}
+                    <motion.div
+                      className="h-2 bg-emerald-green"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progressPercent}%` }}
+                      transition={{ duration: 0.5 }}
                     />
                   </div>
                   <div className="text-xs text-slate-gray mt-1 text-center">
-                    {progressMessage || 'Generating cover letter...'}
+                    {progressMessage || 'Starting generation...'}
                   </div>
-                </div>
-                <div className="text-center">
-                  <motion.svg 
-                    className="h-8 w-8 text-navy-blue mx-auto mb-4" 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    fill="none" 
-                    viewBox="0 0 24 24"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  >
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </motion.svg>
                 </div>
               </motion.div>
             ) : error ? (
@@ -305,9 +347,106 @@ export default function CoverLetterResult({
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
               >
-                <pre className="whitespace-pre-wrap font-sans text-navy-blue leading-relaxed">
-                  {coverLetter}
-                </pre>
+                <div className="bg-white rounded-lg p-6 border border-gray-200">
+                  <div className="space-y-4">
+                    {coverLetter.split('\n\n').map((paragraph, index) => {
+                      const isFirstParagraph = index === 0;
+                      const isLastParagraph = index === coverLetter.split('\n\n').length - 1;
+                      
+                      return (
+                        <motion.div
+                          key={index}
+                          className={`${
+                            isFirstParagraph ? 'font-semibold text-navy-blue' : 'text-navy-blue'
+                          } leading-relaxed`}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                        >
+                          {paragraph.split('\n').map((line, lineIndex) => (
+                            <p key={lineIndex} className="mb-2">
+                              {line}
+                            </p>
+                          ))}
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Letter Structure Guide */}
+                  <motion.div
+                    className="mt-6 p-3 bg-emerald-green/5 rounded-lg border border-emerald-green/20"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <p className="text-xs text-emerald-green font-medium mb-1">📋 Letter Structure</p>
+                    <div className="text-xs text-slate-gray space-y-1">
+                      <p>• <span className="font-medium">Opening:</span> Greeting and position statement</p>
+                      <p>• <span className="font-medium">Body:</span> Relevant experiences and qualifications</p>
+                      <p>• <span className="font-medium">Closing:</span> Interest reinforcement and call to action</p>
+                    </div>
+                  </motion.div>
+                  
+                  {/* Rating and Feedback */}
+                  {!showRating && (
+                    <motion.div
+                      className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.7 }}
+                    >
+                      <p className="text-sm font-medium text-navy-blue mb-3">Was this cover letter helpful?</p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex space-x-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <motion.button
+                              key={star}
+                              onClick={() => {
+                                setRating(star);
+                                setShowRating(true);
+                              }}
+                              className={`text-2xl ${
+                                star <= (rating || 0) ? 'text-yellow-400' : 'text-gray-300'
+                              } hover:text-yellow-400 transition-colors`}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              ★
+                            </motion.button>
+                          ))}
+                        </div>
+                        <motion.button
+                          onClick={() => setShowFeedback(true)}
+                          className="text-sm text-emerald-green hover:text-emerald-600 font-medium"
+                          whileHover={{ scale: 1.05 }}
+                        >
+                          Suggest improvements →
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  )}
+                  
+                  {/* Rating Feedback */}
+                  {showRating && rating && (
+                    <motion.div
+                      className="mt-6 p-4 bg-emerald-green/10 rounded-lg border border-emerald-green"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <p className="text-sm text-emerald-green font-medium mb-2">
+                        {rating >= 4 ? '🎉 Great!' : rating >= 3 ? '👍 Good!' : '🤔 Thanks for the feedback!'}
+                      </p>
+                      <p className="text-xs text-navy-blue">
+                        {rating >= 4 
+                          ? 'We\'re glad this cover letter meets your needs!' 
+                          : 'We\'d love to improve it. Try the "Suggest improvements" button above.'
+                        }
+                      </p>
+                    </motion.div>
+                  )}
+                </div>
               </motion.div>
             ) : (
               <motion.div 
