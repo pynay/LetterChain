@@ -2,6 +2,9 @@ from langgraph_flow import app_graph
 from fastapi import FastAPI, UploadFile, Form, HTTPException, status
 from fastapi.responses import PlainTextResponse, JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 import PyPDF2
 import io
 import json
@@ -40,6 +43,12 @@ def validate_upload(file: UploadFile, file_bytes: bytes, file_label: str):
         )
 
 app = FastAPI()
+
+# Rate limiting setup
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -56,6 +65,7 @@ async def health_check():
     return {"status": "ok", "message": "LetterChain Backend is running"}
 
 @app.post("/generate", response_class=PlainTextResponse)
+@limiter.limit("5/minute")  # 5 requests per minute per IP
 async def generate_cover_letter(
     resume: UploadFile,
     job: UploadFile,
@@ -98,6 +108,7 @@ async def generate_cover_letter(
     return result["cover_letter"]
 
 @app.post("/feedback")
+@limiter.limit("10/minute")  # 10 requests per minute per IP (more lenient for feedback)
 async def provide_feedback(
     resume: UploadFile,
     job: UploadFile,
@@ -143,6 +154,7 @@ async def provide_feedback(
     })
 
 @app.post("/generate-stream")
+@limiter.limit("3/minute")  # 3 requests per minute per IP (more restrictive for streaming)
 async def generate_cover_letter_stream(
     resume: UploadFile,
     job: UploadFile,
