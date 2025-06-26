@@ -92,7 +92,7 @@ generator_system_prompt = (
     "Your goal is to transform structured input (job info, resume details, tone, matched experiences) into a well-formed, emotionally intelligent letter.\n"
     "You always write in a way that sounds personal, specific, and reflective — no templates or generic phrases.\n"
     "You do not hallucinate facts. You only use information given to you.\n"
-    "Assume this draft will be reviewed and improved by the user. Focus on clarity, warmth, and professional insight."
+    "Assume this draft will be reviewed and improved by the user. Focus on clarity and professional insight."
 )
 
 claude_generator = create_claude_with_retry(
@@ -140,6 +140,16 @@ def extract_json_from_markdown(text):
 
 def safe_filename(s):
     return re.sub(r'[^\w\-]', '_', s)
+
+def clean_json_string(s):
+    import re
+    # Remove trailing commas before } or ]
+    s = re.sub(r',([ \t\r\n]*[}\]])', r'\1', s)
+    # Remove any non-JSON text before/after the first/last curly brace
+    match = re.search(r'({.*})', s, re.DOTALL)
+    if match:
+        s = match.group(1)
+    return s
 
 #DEFINING ALL THE NODES FOR LANGGRAPH
 
@@ -291,13 +301,15 @@ Only extract what's present in the text - do not guess or hallucinate. Return ON
     try:
         response = invoke_with_retry(claude_parser_resume, prompt)
         content = extract_json_from_markdown(response.content)
+        cleaned = clean_json_string(content)
         try:
-            parsed = json.loads(content)
+            parsed = json.loads(cleaned)
             state["resume_info"] = parsed
             state["user_name"] = parsed.get("name", "Candidate")
-            print("Resume Testing: ", content)
-        except json.JSONDecodeError:
-            print("Claude returned invalid JSON for resume. Response:", content)
+            print("Resume Testing: ", cleaned)
+        except json.JSONDecodeError as e:
+            print("Claude returned invalid JSON for resume. Response:", cleaned)
+            print("Exception:", e)
             state["resume_info"] = {}
             state["user_name"] = "Candidate"
     except Exception as e:
