@@ -383,11 +383,11 @@ def cover_letter_generator_node(state: dict) -> dict:
 Write a 400–500 word cover letter using the information below.
 
 Requirements:
-1. Begin with a formal greeting: e.g., “Dear [Team/Manager] at {job.get('company', 'the company')}”.
+1. Begin with a formal greeting: e.g., "Dear [Team/Manager] at {job.get('company', 'the company')}".
 2. Intro paragraph: state the job title, company name, and express clear enthusiasm.
 3. Body: highlight 2–3 distinct, relevant experiences from the candidate that align with the job's responsibilities or values.
-4. Closing: reinforce interest, connect to the company’s mission, and invite further discussion.
-5. End with: “Sincerely, {user_name}”
+4. Closing: reinforce interest, connect to the company's mission, and invite further discussion.
+5. End with: "Sincerely, {user_name}"
 
 Constraints:
 - Do not use em dashes, markdown, or placeholders.
@@ -447,7 +447,7 @@ DO NOT return anything except the JSON object. No commentary. No markdown. No ex
 
 
 
-    response = claude_validator.invoke(prompt)
+    response = claude_validator.invoke(validator_prompt)
     content = extract_json_from_markdown(response.content)
     try:
         validation_result = json.loads(content)
