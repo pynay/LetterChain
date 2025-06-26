@@ -413,12 +413,12 @@ def cover_letter_generator_node(state: dict) -> dict:
     tone = job.get("tone", "Professional, concise, and clearly tailored to the role. Direct, specific, and achievement-focused. Avoids filler, excessive warmth, or verbosity.")
 
     prompt = f"""
-Write a 350–450 word cover letter using the information below.
+Write a 250–350 word cover letter using the information below.
 
 Requirements:
 1. Begin with a formal greeting: e.g., "Dear [Team/Manager] at {job.get('company', 'the company')}".
 2. Intro paragraph: state the job title, company name, and express clear enthusiasm.
-3. Body: highlight 2–3 distinct experiences from the candidate that demonstrate **transferable skills** applicable to this role. Focus on:
+3. Body: highlight 1–2 key experiences that demonstrate **transferable skills** applicable to this role. Focus on:
    - How their existing experience translates to the job requirements
    - Specific skills that transfer well (e.g., problem-solving, teamwork, analysis, communication, programming, research)
    - Quantifiable achievements or outcomes from their experience
@@ -441,6 +441,7 @@ Requirements:
 - **Emphasize potential and transferability** rather than direct experience matches
 - **If no exact matches, focus on transferable skills** from their existing background
 - **PRIORITIZE HONESTY OVER PERFECTION** - It's better to be honest about limitations than to fabricate experience
+- **KEEP IT CONCISE** - Aim for 250-350 words, be direct and to-the-point
 
 ### Job Description:
 {job}
@@ -481,7 +482,7 @@ Evaluate the letter below using these criteria:
    - Teamwork experience → collaboration and communication
    - Coursework/projects → relevant technical skills
 4. **Tone and Professionalism** — Is the tone appropriate and professional?
-5. **Length and Structure** — Is it well-structured and appropriately sized (350-500 words)?
+5. **Length and Structure** — Is it well-structured and appropriately sized (250-350 words)?
 
 **CRITICAL HONESTY RULES**: 
 - **REJECT letters** that make ANY false claims about experience, skills, or qualifications
