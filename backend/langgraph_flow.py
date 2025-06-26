@@ -566,15 +566,9 @@ def input_validation_branch(state):
 # Conditional edge: validator controls flow
 def validate_branch(state):
     result = state.get("validation_result", {})
-    current_retries = state.get("validation_retries", 0)
-    
     if result.get("valid", False):
         return "export"
-    elif current_retries >= 3:  # Limit to 3 retries
-        return "export"  # Accept the letter after 3 attempts
     else:
-        # Increment retry counter
-        state["validation_retries"] = current_retries + 1
         return "generate"
 
 
