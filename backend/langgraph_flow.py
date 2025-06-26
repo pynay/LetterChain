@@ -87,16 +87,35 @@ claude_matcher = create_claude_with_retry(
     max_tokens=512
 )
 
+generator_system_prompt = (
+    "You are a professional writing agent specialized in generating high-quality, human-like cover letters.\n"
+    "Your goal is to transform structured input (job info, resume details, tone, matched experiences) into a well-formed, emotionally intelligent letter.\n"
+    "You always write in a way that sounds personal, specific, and reflective — no templates or generic phrases.\n"
+    "You do not hallucinate facts. You only use information given to you.\n"
+    "Assume this draft will be reviewed and improved by the user. Focus on clarity, warmth, and professional insight."
+)
+
 claude_generator = create_claude_with_retry(
     model="claude-opus-4-20250514",
     temperature=0.6,
-    max_tokens=1024
+    max_tokens=1024,
+    system=generator_system_prompt
+)
+
+validator_system_prompt = (
+    "You are a strict and intelligent QA assistant for AI-generated cover letters.\n"
+    "Your job is to evaluate whether a cover letter meets specific content, tone, and formatting requirements.\n"
+    "You never rewrite the letter. You only return a judgment (valid or not) and a list of clear, actionable issues.\n"
+    "You do not ignore minor problems if they affect clarity, tone, or human authenticity.\n"
+    "You aim to ensure that every letter sounds human, specific, and emotionally aware — never generic or robotic.\n"
+    "You only use the evaluation criteria provided to you, and never make up new ones."
 )
 
 claude_validator = create_claude_with_retry(
     model="claude-3-7-sonnet-20250219",
     temperature=0.0,
-    max_tokens=512
+    max_tokens=512,
+    system=validator_system_prompt
 )
 
 claude_input_validation = create_claude_with_retry(
@@ -361,26 +380,24 @@ def cover_letter_generator_node(state: dict) -> dict:
 
     
     prompt = f"""
-You are a helpful assistant that writes tailored, one-page cover letters using structured data from a candidate's resume and a job description.
+Write a 400–500 word cover letter using the information below.
 
-Your task is to generate a professional, specific, and concise cover letter that includes the following:
+Requirements:
+1. Begin with a formal greeting: e.g., “Dear [Team/Manager] at {job.get('company', 'the company')}”.
+2. Intro paragraph: state the job title, company name, and express clear enthusiasm.
+3. Body: highlight 2–3 distinct, relevant experiences from the candidate that align with the job's responsibilities or values.
+4. Closing: reinforce interest, connect to the company’s mission, and invite further discussion.
+5. End with: “Sincerely, {user_name}”
 
-1. A formal greeting addressed directly to the company and job title (e.g., "Dear [Team/Manager] at {job.get('company', 'the company')}").
-2. An introductory paragraph that clearly states the position being applied for and expresses enthusiasm.
-3. Two to three **distinct and relevant experiences** from the candidate that directly match the job's responsibilities or values.
-4. A closing paragraph that reinforces interest, aligns with the company's mission/values, and invites further discussion.
-5. A sign-off that ends with "Sincerely," followed by the candidate's full name: **{user_name}**
-
-🛑 **Constraints**:
-- You may only use the information provided. Do NOT invent experiences, skills, or facts that are not explicitly included in the structured input.
+Constraints:
+- Do not use em dashes, markdown, or placeholders.
+- Do not fabricate experiences or skills — only use the data provided.
 - Maintain a {tone} tone throughout.
-- Do not include headers, placeholders, or markdown formatting, do not use ANY em dashes.
-- Keep the letter within 400–500 words.
 
-### Job Description Summary:
+### Job Description:
 {job}
 
-### Candidate's Matched Experiences:
+### Matched Experiences:
 {experiences}
 """
 
@@ -403,23 +420,23 @@ def cover_letter_validator_node(state: dict) -> dict:
     job = state["job_info"]
     tone = job.get("tone", "formal")
 
-    prompt = f"""
-You are a meticulous quality assurance assistant for AI-generated cover letters. Your standards are high.
+    validator_prompt = f"""
+You are a meticulous quality assurance assistant for AI-generated cover letters. Your standards are high and non-negotiable.
 
-Evaluate the following cover letter according to these strict criteria:
+Evaluate the letter below using these strict criteria:
 
-1. **Company and Job Mention**: Does it clearly and correctly mention the exact company name and job title as stated in the job description?
-2. **Experience Relevance**: Does it highlight at least two distinct, concrete experiences that clearly align with the specific responsibilities or qualifications listed in the job?
-3. **Tone Accuracy**: Does it maintain the required tone ("{tone}") consistently, avoiding mechanical, stiff, or overly formal phrasing?
-4. **Specificity and Depth**: Is the letter tailored and thoughtful — does it avoid vague language, clichés, and filler? Does it demonstrate actual familiarity with the company, mission, or product?
-5. **Human and Personal Voice**: Does it sound like a real person wrote it? Is there genuine personality, motivation, or reflection conveyed, rather than formulaic or AI-sounding language?
-6. **Length Constraint**: Is the letter under one page (max ~500 words)?
+1. Company and Job Mention — Does it clearly mention the **exact** company name and job title?
+2. Experience Relevance — Does it include **at least two distinct, concrete experiences** that match specific responsibilities or qualifications in the job description?
+3. Tone Accuracy — Is the tone consistent with the required tone: "{tone}"? Avoid mechanical, stiff, or overly formal writing.
+4. Specificity and Depth — Is the letter tailored, thoughtful, and informed? Avoid vague, generic, or filler content. Look for signs of actual familiarity with the company, product, or mission.
+5. Human and Personal Voice — Does the writing sound human and reflective? Is there a clear sense of motivation or emotional intelligence?
+6. Length Constraint — Is the letter under one page (approx. 400–500 words)?
 
 Return a JSON object with:
 - "valid": true or false
-- "issues": a list of strings describing problems found, if any. Be blunt, specific, and critical.
+- "issues": list of concrete problems if found. Be blunt, specific, and critical.
 
-Only return the JSON object. No commentary. No triple backticks.
+DO NOT return anything except the JSON object. No commentary. No markdown. No extra text.
 
 ### Cover Letter:
 {letter}
@@ -427,6 +444,7 @@ Only return the JSON object. No commentary. No triple backticks.
 ### Job Info:
 {job}
 """
+
 
 
     response = claude_validator.invoke(prompt)
