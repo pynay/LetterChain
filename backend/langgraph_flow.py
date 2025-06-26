@@ -418,17 +418,25 @@ Write a 350–450 word cover letter using the information below.
 Requirements:
 1. Begin with a formal greeting: e.g., "Dear [Team/Manager] at {job.get('company', 'the company')}".
 2. Intro paragraph: state the job title, company name, and express clear enthusiasm.
-3. Body: highlight 2–3 distinct, relevant experiences from the candidate that align with the job's responsibilities or values.
+3. Body: highlight 2–3 distinct experiences from the candidate that demonstrate **transferable skills** applicable to this role. Focus on:
+   - How their existing experience translates to the job requirements
+   - Specific skills that transfer well (e.g., problem-solving, teamwork, analysis, communication, programming, research)
+   - Quantifiable achievements or outcomes from their experience
+   - Learning ability and adaptability
+   - If no exact matches exist, emphasize transferable skills from their background
 4. Closing: reinforce interest, connect to the company's mission, and invite further discussion.
 5. End with: "Sincerely, {user_name}"
 
-Constraints:
-- Be concise and direct. Avoid flowery language, excessive warmth, or unnecessary detail.
-- Do not use em dashes, markdown, or placeholders.
-- Do not fabricate experiences or skills — only use the data provided.
-- Maintain a {tone} tone throughout.
-- Prioritize clarity and professionalism over emotional tone.
-- Keep the letter as concise as possible within the word limit.
+**CRITICAL GUIDELINES:**
+- **Focus on transferable skills** - Show how existing experience applies to the new role
+- **Be specific about skills** - Programming, analysis, teamwork, communication, etc.
+- **Highlight learning ability** - Demonstrate adaptability and growth mindset
+- **Use concrete examples** - Reference specific projects, courses, or experiences
+- **Maintain a {tone} tone throughout**
+- **Be concise and direct, avoiding flowery language**
+- **NEVER fabricate or stretch experience** - only use information that is actually provided
+- **Emphasize potential and transferability** rather than direct experience matches
+- **If no exact matches, focus on transferable skills** from their existing background
 
 ### Job Description:
 {job}
@@ -456,20 +464,30 @@ def cover_letter_validator_node(state: dict) -> dict:
     tone = job.get("tone", "formal")
 
     validator_prompt = f"""
-You are a meticulous quality assurance assistant for AI-generated cover letters. Your standards are high and non-negotiable.
+You are a quality assurance assistant for AI-generated cover letters. Your goal is to ensure letters are professional, honest, and demonstrate the candidate's potential to contribute to the role.
 
-Evaluate the letter below using these strict criteria:
+Evaluate the letter below using these criteria:
 
-1. Company and Job Mention — Does it clearly mention the **exact** company name and job title?
-2. Experience Relevance — Does it include **at least two distinct, concrete experiences** that match specific responsibilities or qualifications in the job description?
-3. Tone Accuracy — Is the tone consistent with the required tone: "{tone}"? Avoid mechanical, stiff, or overly formal writing.
-4. Specificity and Depth — Is the letter tailored, thoughtful, and informed? Avoid vague, generic, or filler content. Look for signs of actual familiarity with the company, product, or mission.
-5. Human and Personal Voice — Does the writing sound human and reflective? Is there a clear sense of motivation or emotional intelligence?
-6. Length Constraint — Is the letter under one page (approx. 400–500 words)?
+1. **Honesty and Authenticity** — Does the letter honestly represent the candidate's experience without fabrication?
+2. **Company and Job Mention** — Does it clearly mention the company name and job title?
+3. **Transferable Skills Focus** — Does it effectively connect the candidate's background to the job through transferable skills? For example:
+   - Programming experience → web development skills
+   - Git experience → version control and collaboration
+   - Research/analysis skills → problem-solving and attention to detail
+   - Teamwork experience → collaboration and communication
+   - Coursework/projects → relevant technical skills
+4. **Tone and Professionalism** — Is the tone appropriate and professional?
+5. **Length and Structure** — Is it well-structured and appropriately sized (350-500 words)?
+
+**Important**: 
+- **Accept letters** that demonstrate relevant transferable skills and genuine interest
+- **Reject letters** that make false claims about experience or skills
+- **Be flexible** about direct experience requirements if the candidate shows relevant transferable skills
+- **Focus on potential and transferability** rather than exact experience matches
 
 Return a JSON object with:
 - "valid": true or false
-- "issues": list of concrete problems if found. Be blunt, specific, and critical.
+- "issues": list of concrete problems if found. Be constructive and specific.
 
 DO NOT return anything except the JSON object. No commentary. No markdown. No extra text.
 
@@ -479,8 +497,6 @@ DO NOT return anything except the JSON object. No commentary. No markdown. No ex
 ### Job Info:
 {job}
 """
-
-
 
     response = claude_validator.invoke(validator_prompt)
     content = extract_json_from_markdown(response.content)
@@ -544,9 +560,15 @@ def input_validation_branch(state):
 # Conditional edge: validator controls flow
 def validate_branch(state):
     result = state.get("validation_result", {})
+    current_retries = state.get("validation_retries", 0)
+    
     if result.get("valid", False):
         return "export"
+    elif current_retries >= 3:  # Limit to 3 retries
+        return "export"  # Accept the letter after 3 attempts
     else:
+        # Increment retry counter
+        state["validation_retries"] = current_retries + 1
         return "generate"
 
 
