@@ -86,7 +86,7 @@ export default function CoverLetterForm({ onSubmit, isLoading }: CoverLetterForm
           Resume (PDF or TXT)
         </label>
         <p className="text-xs text-slate-gray mb-2">
-          Upload your resume in PDF or text format. We'll extract your experience and skills to match with the job.
+          Upload your resume in PDF or text format. We&apos;ll extract your experience and skills to match with the job.
         </p>
         <motion.div
           whileHover={{ scale: 1.02 }}

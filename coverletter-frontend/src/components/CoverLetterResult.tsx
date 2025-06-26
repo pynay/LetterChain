@@ -254,7 +254,6 @@ export default function CoverLetterResult({
                     {progressSteps.map((step, index) => {
                       const isActive = index === currentStep;
                       const isCompleted = index < currentStep;
-                      const isPending = index > currentStep;
                       
                       return (
                         <motion.div
@@ -351,7 +350,6 @@ export default function CoverLetterResult({
                   <div className="space-y-4">
                     {coverLetter.split('\n\n').map((paragraph, index) => {
                       const isFirstParagraph = index === 0;
-                      const isLastParagraph = index === coverLetter.split('\n\n').length - 1;
                       
                       return (
                         <motion.div
