@@ -12,7 +12,7 @@ interface CoverLetterFormProps {
 export default function CoverLetterForm({ onSubmit, isLoading }: CoverLetterFormProps) {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState('');
-  const [tone, setTone] = useState('Emotionally intelligent, detailed, and clearly tailored to the role and mission. Shows initiative, reflection, and care — top-tier cover letter.');
+  const [tone, setTone] = useState('Professional, concise, and clearly tailored to the role. Direct, specific, and achievement-focused. Avoids filler, excessive warmth, or verbosity.');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -159,10 +159,13 @@ export default function CoverLetterForm({ onSubmit, isLoading }: CoverLetterForm
             id="tone"
             value={tone}
             onChange={(e) => setTone(e.target.value)}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-green focus:ring-emerald-green sm:text-sm bg-white text-navy-blue"
+            className="block w-full rounded-md border-neutral-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white text-neutral-900"
           >
+            <option value="Professional, concise, and clearly tailored to the role. Direct, specific, and achievement-focused. Avoids filler, excessive warmth, or verbosity.">
+              🧑‍💼 Professional & Concise — Direct, specific, and achievement-focused
+            </option>
             <option value="Emotionally intelligent, detailed, and clearly tailored to the role and mission. Shows initiative, reflection, and care — top-tier cover letter.">
-              🧠 Professional & Detailed — Insightful and thorough
+              🧠 Emotionally Intelligent & Detailed — Insightful and thorough
             </option>
             <option value="Confident, enthusiastic, and results-oriented. Emphasizes achievements and impact.">
               💪 Confident & Enthusiastic — Bold and achievement-focused

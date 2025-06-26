@@ -1,5 +1,5 @@
 from langgraph_flow import app_graph
-from fastapi import FastAPI, UploadFile, Form, HTTPException
+from fastapi import FastAPI, UploadFile, Form, HTTPException, status
 from fastapi.responses import PlainTextResponse, JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 import PyPDF2
@@ -10,8 +10,34 @@ import asyncio
 import time
 import random
 
+# Security constants
+MAX_FILE_SIZE = 2 * 1024 * 1024  # 2MB
+ALLOWED_EXTENSIONS = {".pdf", ".txt"}
+ALLOWED_MIME_TYPES = {"application/pdf", "text/plain"}
 
-
+def validate_upload(file: UploadFile, file_bytes: bytes, file_label: str):
+    """Validate file size, extension, and MIME type"""
+    # Check file size
+    if len(file_bytes) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"{file_label} file is too large (max 2MB)."
+        )
+    
+    # Check extension
+    ext = file.filename.lower().rsplit(".", 1)[-1] if "." in file.filename else ""
+    if f".{ext}" not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{file_label} file type not allowed. Only PDF and TXT are supported."
+        )
+    
+    # Check MIME type (best effort, not bulletproof)
+    if file.content_type not in ALLOWED_MIME_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{file_label} file MIME type not allowed."
+        )
 
 app = FastAPI()
 app.add_middleware(
@@ -35,8 +61,10 @@ async def generate_cover_letter(
     job: UploadFile,
     tone: str = Form("Emotionally intelligent, detailed, and clearly tailored to the role and mission. Shows initiative, reflection, and care — top-tier cover letter.")
 ): 
-    # Handle resume file (PDF or TXT)
+    # Validate resume file
     resume_bytes = await resume.read()
+    validate_upload(resume, resume_bytes, "Resume")
+    
     resume_text = ""
     if resume.filename.lower().endswith(".pdf"):
         try:
@@ -47,8 +75,10 @@ async def generate_cover_letter(
     else:
         resume_text = resume_bytes.decode(errors="ignore")
 
-    # Handle job file (assume TXT)
-    job_text = (await job.read()).decode(errors="ignore")
+    # Validate job file
+    job_bytes = await job.read()
+    validate_upload(job, job_bytes, "Job description")
+    job_text = job_bytes.decode(errors="ignore")
 
     state = {
         "resume_posting": resume_text,
@@ -75,8 +105,10 @@ async def provide_feedback(
     user_feedback: str = Form(),
     current_cover_letter: str = Form()
 ):
-    # Handle resume file (PDF or TXT)
+    # Validate resume file
     resume_bytes = await resume.read()
+    validate_upload(resume, resume_bytes, "Resume")
+    
     resume_text = ""
     if resume.filename.lower().endswith(".pdf"):
         try:
@@ -87,8 +119,10 @@ async def provide_feedback(
     else:
         resume_text = resume_bytes.decode(errors="ignore")
 
-    # Handle job file (assume TXT)
-    job_text = (await job.read()).decode(errors="ignore")
+    # Validate job file
+    job_bytes = await job.read()
+    validate_upload(job, job_bytes, "Job description")
+    job_text = job_bytes.decode(errors="ignore")
 
     # Create state with user feedback
     state = {
@@ -119,6 +153,8 @@ async def generate_cover_letter_stream(
             # Step 1: Parse resume
             yield f"data: Parsing resume...\n\n"
             resume_bytes = await resume.read()
+            validate_upload(resume, resume_bytes, "Resume")
+            
             resume_text = ""
             if resume.filename.lower().endswith(".pdf"):
                 try:
@@ -133,7 +169,9 @@ async def generate_cover_letter_stream(
 
             # Step 2: Parse job description
             yield f"data: Parsing job description...\n\n"
-            job_text = (await job.read()).decode(errors="ignore")
+            job_bytes = await job.read()
+            validate_upload(job, job_bytes, "Job description")
+            job_text = job_bytes.decode(errors="ignore")
             await asyncio.sleep(0.2)
 
             # Step 3: Matching experiences
