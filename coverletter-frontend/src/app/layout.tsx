@@ -10,6 +10,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "LetterChain | AI Cover Letter Generator",
   description: "Generate personalized cover letters using AI with LetterChain.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
