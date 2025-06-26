@@ -145,56 +145,46 @@ export default function Home() {
       initial="hidden"
       animate="visible"
     >
-      <div className="max-w-4xl mx-auto">
-        <motion.div 
-          className="text-center mb-8"
-          variants={itemVariants}
-        >
-          <motion.h1 
-            className="text-4xl font-bold text-navy-blue mb-2"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+      <div className="max-w-xl mx-auto">
+        {/* Show the form if not loading and no cover letter */}
+        {(!isLoading && !coverLetter) && (
+          <motion.div
+            className="bg-white rounded-2xl shadow-lg border border-neutral-200/50 p-8"
+            variants={itemVariants}
           >
-            Cover Letter Generator
-          </motion.h1>
-          <motion.p 
-            className="text-lg text-slate-gray"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            Upload your resume and job description to generate a personalized cover letter
-          </motion.p>
-        </motion.div>
-
-        <motion.div 
-          className="grid lg:grid-cols-2 gap-8"
-          variants={itemVariants}
-        >
-          <motion.div 
-            className="bg-white rounded-xl shadow-lg p-6"
-            whileHover={{ 
-              y: -5,
-              boxShadow: "0 20px 40px rgba(0,0,0,0.1)"
-            }}
-            transition={{ duration: 0.3 }}
-          >
-            <CoverLetterForm 
+            <CoverLetterForm
               onSubmit={handleGenerateCoverLetter}
               isLoading={isLoading}
             />
           </motion.div>
+        )}
 
-          <motion.div 
-            className="bg-white rounded-xl shadow-lg p-6"
-            whileHover={{ 
-              y: -5,
-              boxShadow: "0 20px 40px rgba(0,0,0,0.1)"
-            }}
-            transition={{ duration: 0.3 }}
+        {/* Show the result/progress if loading or after generation */}
+        {(isLoading || coverLetter) && (
+          <motion.div
+            className="relative bg-white rounded-2xl shadow-lg border border-neutral-200/50 p-8 max-w-4xl mx-auto"
+            variants={itemVariants}
           >
-            <CoverLetterResult 
+            {/* Start Over button at top, centered */}
+            {!isLoading && (
+              <div className="flex justify-center mb-8">
+                <button
+                  className="btn-accent text-base px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-md"
+                  onClick={() => {
+                    setCoverLetter('');
+                    setError('');
+                    setShowFeedback(false);
+                    setProgressMessage('');
+                    setOriginalFormData(null);
+                  }}
+                  title="Start Over"
+                >
+                  <span className="text-lg">🔄</span>
+                  <span>Start Over</span>
+                </button>
+              </div>
+            )}
+            <CoverLetterResult
               coverLetter={coverLetter}
               isLoading={isLoading}
               error={error}
@@ -204,18 +194,18 @@ export default function Home() {
               progressMessage={progressMessage}
             />
           </motion.div>
-        </motion.div>
-
-        {/* Agents Explanation Section */}
-        <motion.div
-          variants={itemVariants}
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-        >
-          <AgentsExplanation />
-        </motion.div>
+        )}
       </div>
+
+      {/* Agents Explanation Section */}
+      <motion.div
+        variants={itemVariants}
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.6 }}
+      >
+        <AgentsExplanation />
+      </motion.div>
     </motion.main>
   );
 }
