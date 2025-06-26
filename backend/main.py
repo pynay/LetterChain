@@ -1,5 +1,5 @@
 from langgraph_flow import app_graph
-from fastapi import FastAPI, UploadFile, Form, HTTPException, status
+from fastapi import FastAPI, UploadFile, Form, HTTPException, status, Request
 from fastapi.responses import PlainTextResponse, JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -67,6 +67,7 @@ async def health_check():
 @app.post("/generate", response_class=PlainTextResponse)
 @limiter.limit("5/minute")  # 5 requests per minute per IP
 async def generate_cover_letter(
+    request: Request,
     resume: UploadFile,
     job: UploadFile,
     tone: str = Form("Emotionally intelligent, detailed, and clearly tailored to the role and mission. Shows initiative, reflection, and care — top-tier cover letter.")
@@ -110,6 +111,7 @@ async def generate_cover_letter(
 @app.post("/feedback")
 @limiter.limit("10/minute")  # 10 requests per minute per IP (more lenient for feedback)
 async def provide_feedback(
+    request: Request,
     resume: UploadFile,
     job: UploadFile,
     tone: str = Form(),
@@ -156,6 +158,7 @@ async def provide_feedback(
 @app.post("/generate-stream")
 @limiter.limit("3/minute")  # 3 requests per minute per IP (more restrictive for streaming)
 async def generate_cover_letter_stream(
+    request: Request,
     resume: UploadFile,
     job: UploadFile,
     tone: str = Form("Emotionally intelligent, detailed, and clearly tailored to the role and mission. Shows initiative, reflection, and care — top-tier cover letter.")
