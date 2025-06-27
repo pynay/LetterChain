@@ -430,8 +430,6 @@ Requirements:
 **CRITICAL HONESTY GUIDELINES:**
 - **NEVER fabricate, invent, or stretch experience** - only use information that is explicitly provided
 - **Be completely truthful** about the candidate's actual experience and skills
-- **If the candidate lacks specific experience, acknowledge it honestly** and focus on transferable skills
-- **Do not claim expertise in technologies or skills not mentioned** in the resume
 - **Focus on transferable skills** - Show how existing experience applies to the new role
 - **Be specific about skills** - Programming, analysis, teamwork, communication, etc.
 - **Highlight learning ability** - Demonstrate adaptability and growth mindset
@@ -442,6 +440,8 @@ Requirements:
 - **If no exact matches, focus on transferable skills** from their existing background
 - **PRIORITIZE HONESTY OVER PERFECTION** - It's better to be honest about limitations than to fabricate experience
 - **KEEP IT CONCISE** - Aim for 250-350 words, be direct and to-the-point
+- **BE CONFIDENT** - Focus on strengths and transferable skills, don't apologize for gaps
+- **EMPHASIZE POTENTIAL** - Show enthusiasm for learning and growth opportunities
 
 ### Job Description:
 {job}
@@ -481,7 +481,7 @@ Evaluate the letter below using these criteria:
    - Research/analysis skills → problem-solving and attention to detail
    - Teamwork experience → collaboration and communication
    - Coursework/projects → relevant technical skills
-4. **Tone and Professionalism** — Is the tone appropriate and professional?
+4. **Tone and Professionalism** — Is the tone appropriate, professional, and confident?
 5. **Length and Structure** — Is it well-structured and appropriately sized (250-350 words)?
 
 **CRITICAL HONESTY RULES**: 
@@ -491,6 +491,7 @@ Evaluate the letter below using these criteria:
 - **ACCEPT letters** that are honest about limitations and focus on transferable skills
 - **PRIORITIZE HONESTY OVER PERFECTION** - A truthful letter with gaps is better than a fabricated perfect letter
 - **Be flexible** about direct experience requirements if the candidate shows relevant transferable skills
+- **ENCOURAGE CONFIDENCE** - Letters should focus on strengths and potential, not apologize for gaps
 
 Return a JSON object with:
 - "valid": true or false
