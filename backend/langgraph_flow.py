@@ -7,6 +7,7 @@ import re
 from dotenv import load_dotenv
 import time
 import random
+from langfuse import Langfuse
 load_dotenv()
 #setting up claude client
 api_key = os.getenv("ANTHROPIC_API_KEY")
@@ -62,6 +63,13 @@ def invoke_with_retry(model, prompt, max_retries=3, base_delay=1):
                 raise e
     
     raise Exception("Max retries exceeded")
+
+
+langfuse = Langfuse(
+    public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
+    secret_key=os.getenv("LANGFURE_SECRET_KEY"),
+    host=os.getenv("LANGFUSE_HOST")
+
 
 #setting up claude client
 claude = create_claude_with_retry(
