@@ -135,10 +135,9 @@ async def generate_cover_letter_stream(
     This endpoint provides streaming updates as the workflow progresses,
     useful for showing progress to users during generation.
     """
-    
     from fastapi.responses import StreamingResponse
     import json
-    
+
     async def event_generator():
         try:
             # File validation (same as non-streaming endpoint)
@@ -147,34 +146,27 @@ async def generate_cover_letter_stream(
             if not resume_validation.is_valid:
                 yield f"data: {json.dumps({'error': resume_validation.error_message})}\n\n"
                 return
-            
             job_bytes = await job.read()
             job_validation = file_service.validate_upload(job, job_bytes, "Job description")
             if not job_validation.is_valid:
                 yield f"data: {json.dumps({'error': job_validation.error_message})}\n\n"
                 return
-            
             # Extract text
             resume_text = file_service.extract_text(resume, resume_bytes)
             job_text = file_service.extract_text(job, job_bytes)
-            
             # Stream workflow progress
             state = {
                 "resume_posting": resume_text,
                 "job_posting": job_text,
                 "tone": tone.value
             }
-            
             # Execute workflow with streaming updates
-            result = await graph_service.invoke_graph_streaming(state, event_generator)
-            
-            # Send final result
-            yield f"data: {json.dumps({'result': result})}\n\n"
-            
+            async for message in graph_service.invoke_graph_streaming(state):
+                yield message
         except Exception as e:
             logger.error(f"Streaming generation failed: {str(e)}")
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
-    
+
     return StreamingResponse(
         event_generator(),
         media_type="text/plain",
