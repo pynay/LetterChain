@@ -7,7 +7,7 @@ slowapi==0.1.9
 # AI and ML
 langchain-anthropic==0.1.0
 langgraph==0.0.40
-anthropic==0.7.8
+anthropic>=0.16.0
 
 # Data processing
 pydantic==2.5.0
@@ -18,7 +18,7 @@ PyPDF2==3.0.1
 redis==5.0.1
 
 # Observability
-langfuse==2.0.0
+langfuse==3.0.7
 
 # Utilities
 python-dotenv==1.0.0
