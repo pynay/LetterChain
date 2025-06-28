@@ -1,11 +1,24 @@
+# FastAPI and web framework
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 python-multipart==0.0.6
-python-dotenv==1.0.0
-langgraph==0.0.20
+slowapi==0.1.9
+
+# AI and ML
+langchain-anthropic==0.1.0
+langgraph==0.0.40
+anthropic==0.7.8
+
+# Data processing
+pydantic==2.5.0
+pydantic-settings==2.1.0
 PyPDF2==3.0.1
-langchain
-langchain-anthropic
-anthropic
-slowapi
-redis
+
+# Caching and storage
+redis==5.0.1
+
+# Observability
+langfuse==2.0.0
+
+# Utilities
+python-dotenv==1.0.0
