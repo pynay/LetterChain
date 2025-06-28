@@ -36,8 +36,17 @@ class GraphService:
             metadata = result["generation_metadata"]
             yield f"data: {json.dumps({'status': 'Workflow completed', 'metadata': metadata})}\n\n"
         
-        # Send final result
-        yield f"data: {json.dumps({'result': result})}\n\n"
+        # Send final result in frontend-compatible format
+        if "cover_letter" in result:
+            yield f"data: FINAL_COVER_LETTER::{json.dumps({'cover_letter': result['cover_letter']})}\n\n"
+            yield "data: done\n\n"
+        elif "error" in result:
+            error_detail = result["error"].get("details", "Unknown error")
+            yield f"data: ERROR::{error_detail}\n\n"
+            yield "data: done\n\n"
+        else:
+            yield f"data: {json.dumps(result)}\n\n"
+            yield "data: done\n\n"
     
     async def invoke_graph_with_feedback(
         self, 
