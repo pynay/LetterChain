@@ -33,7 +33,7 @@ export default function RootLayout({
           <span className="ml-4 text-base text-slate-gray font-medium hidden sm:inline">AI-powered cover letter generator</span>
         </header>
         <main className="flex-1 flex flex-col">{children}</main>
-        <footer className="w-full py-4 px-4 bg-white border-t text-center text-sm text-slate-gray">© 2024 LetterChain</footer>
+        <footer className="w-full py-4 px-4 bg-white border-t text-center text-sm text-slate-gray">© 2025 LetterChain</footer>
       </body>
     </html>
   );

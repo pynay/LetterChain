@@ -118,38 +118,32 @@ export default function AgentsExplanation() {
         transition={{ delay: 0.3, duration: 0.6 }}
         className="mb-12 p-6 bg-gradient-to-r from-slate-50 to-blue-50 rounded-lg border border-slate-200"
       >
-        <h3 className="text-xl font-semibold text-navy-blue mb-4">System Architecture</h3>
+        <h3 className="text-xl font-semibold text-navy-blue mb-4">How It Works</h3>
         <div className="grid md:grid-cols-2 gap-6">
           <div>
-            <h4 className="font-semibold text-navy-blue mb-2">State Management</h4>
-            <div className="bg-slate-100 p-3 rounded text-sm font-mono">
-              <div>CoverLetterState(TypedDict):</div>
-              <div className="ml-4 text-slate-600">
-                job_posting: str<br/>
-                resume_posting: str<br/>
-                tone: str<br/>
-                job_info: dict<br/>
-                resume_info: dict<br/>
-                matched_experiences: List[dict]<br/>
-                cover_letter: str<br/>
-                validation_result: dict<br/>
-                prior_issues: Optional[List[str]]<br/>
-                export_path: Optional[str]<br/>
-                user_name: Optional[str]
-              </div>
+            <h4 className="font-semibold text-navy-blue mb-2">Smart, Seamless Experience</h4>
+            <div className="bg-slate-100 p-3 rounded text-sm">
+              <div className="mb-2">Upload your resume (PDF, Word, or TXT) and paste in a job description.</div>
+              <ul className="list-disc ml-6 text-slate-600">
+                <li>Our system instantly reads and understands your resume—no manual reformatting required.</li>
+                <li>Advanced AI matches your experience to the job, then writes a tailored, confident cover letter in real time.</li>
+                <li>See your letter stream in live, so you're never left waiting in the dark.</li>
+                <li>Want changes? Suggest improvements and get a new draft instantly—no need to start over.</li>
+                <li>All your data is processed securely and never used for training.</li>
+              </ul>
             </div>
           </div>
           <div>
-            <h4 className="font-semibold text-navy-blue mb-2">Flow Control</h4>
-            <div className="bg-slate-100 p-3 rounded text-sm font-mono">
-              <div>Conditional Edge Logic:</div>
-              <div className="ml-4 text-slate-600">
-                validate_branch(state) &rarr;<br/>
-                <span className="ml-4">if validation_result.valid:</span><br/>
-                <span className="ml-6">return &quot;export&quot;</span><br/>
-                <span className="ml-4">else:</span><br/>
-                <span className="ml-6">return &quot;generate&quot;</span>
-              </div>
+            <h4 className="font-semibold text-navy-blue mb-2">What Makes It Special?</h4>
+            <div className="bg-slate-100 p-3 rounded text-sm">
+              <ul className="list-disc ml-6 text-slate-600">
+                <li><span className="font-semibold text-emerald-green">Real-time AI:</span> See your cover letter generate as you watch.</li>
+                <li><span className="font-semibold text-emerald-green">Multi-format support:</span> Upload PDF, DOCX, or TXT resumes—no conversion needed.</li>
+                <li><span className="font-semibold text-emerald-green">Validation loop:</span> Every letter is double-checked by a second AI for quality and honesty. If it doesn't meet the bar, the system automatically revises and improves it before you see the result.</li>
+                <li><span className="font-semibold text-emerald-green">Feedback loop:</span> Instantly refine your letter with your own suggestions.</li>
+                <li><span className="font-semibold text-emerald-green">Reliable & secure:</span> Built with robust cloud tech, so your data and experience are always safe.</li>
+                <li><span className="font-semibold text-emerald-green">Powered by top-tier AI:</span> Uses advanced models for the best results.</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -215,154 +209,6 @@ export default function AgentsExplanation() {
           </motion.div>
         ))}
       </div>
-
-      {/* LangGraph Flow Diagram */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8, duration: 0.6 }}
-        className="mb-12 p-6 bg-gradient-to-r from-emerald-green/5 to-blue-500/5 rounded-lg border border-emerald-green/20"
-      >
-        <div className="text-center mb-6">
-          <h3 className="text-xl font-semibold text-navy-blue mb-2">
-            LangGraph Execution Flow
-          </h3>
-          <p className="text-slate-gray">
-            StateGraph with conditional edges and iterative refinement
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          {langGraphFlow.map((flow, index) => (
-            <motion.div
-              key={flow.step}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 1 + index * 0.1, duration: 0.5 }}
-              className="flex flex-col items-center"
-            >
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                className={`w-16 h-16 rounded-full flex items-center justify-center text-white font-semibold text-lg
-                  ${
-                    flow.node === 'export'
-                      ? 'bg-emerald-green'
-                      : flow.node === 'conditional'
-                      ? 'bg-orange-500'
-                      : 'bg-navy-blue'
-                  }
-                `}
-              >
-                {flow.step}
-              </motion.div>
-              <span className="text-xs text-slate-gray mt-2 text-center max-w-20">
-                {flow.description}
-              </span>
-              <span className="text-xs font-mono text-emerald-green mt-1">
-                {flow.node}
-              </span>
-              
-              {index < langGraphFlow.length - 1 && (
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ delay: 1.2 + index * 0.1, duration: 0.3 }}
-                  className="w-12 h-0.5 bg-gradient-to-r from-emerald-green to-navy-blue mt-4"
-                />
-              )}
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Conditional Flow Explanation */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.8, duration: 0.6 }}
-          className="mt-8 p-4 bg-slate-100 rounded-lg"
-        >
-          <h4 className="font-semibold text-navy-blue mb-2">Conditional Logic</h4>
-          <div className="text-sm text-slate-600 font-mono">
-            <div>validate_branch(state) →</div>
-            <div className="ml-4">
-              if validation_result.get(&quot;valid&quot;, False):<br/>
-              <span className="ml-6 text-emerald-green">→ &quot;export&quot; (success)</span><br/>
-              else:<br/>
-              <span className="ml-6 text-orange-600">→ &quot;generate&quot; (retry with prior_issues)</span>
-            </div>
-          </div>
-        </motion.div>
-      </motion.div>
-
-      {/* Technical Specifications */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.5, duration: 0.6 }}
-        className="grid md:grid-cols-3 gap-6"
-      >
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          className="text-center p-4 bg-emerald-green/10 rounded-lg"
-        >
-          <div className="text-2xl mb-2">⚡</div>
-          <h4 className="font-semibold text-navy-blue">State Management</h4>
-          <p className="text-sm text-slate-gray">TypedDict with optional fields</p>
-          <div className="text-xs font-mono text-emerald-green mt-2">
-            CoverLetterState
-          </div>
-        </motion.div>
-        
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          className="text-center p-4 bg-blue-500/10 rounded-lg"
-        >
-          <div className="text-2xl mb-2">🔄</div>
-          <h4 className="font-semibold text-navy-blue">Iterative Refinement</h4>
-          <p className="text-sm text-slate-gray">Validation-driven retry loop</p>
-          <div className="text-xs font-mono text-blue-600 mt-2">
-            prior_issues[]
-          </div>
-        </motion.div>
-        
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          className="text-center p-4 bg-purple-500/10 rounded-lg"
-        >
-          <div className="text-2xl mb-2">🎯</div>
-          <h4 className="font-semibold text-navy-blue">Model Optimization</h4>
-          <p className="text-sm text-slate-gray">Specialized models per task</p>
-          <div className="text-xs font-mono text-purple-600 mt-2">
-            Claude-3-Sonnet + Opus
-          </div>
-        </motion.div>
-      </motion.div>
-
-      {/* Response Processing */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 2.0, duration: 0.6 }}
-        className="mt-8 p-6 bg-slate-50 rounded-lg border border-slate-200"
-      >
-        <h4 className="font-semibold text-navy-blue mb-3">Response Processing</h4>
-        <div className="grid md:grid-cols-2 gap-4 text-sm">
-          <div>
-            <h5 className="font-semibold text-slate-700 mb-2">Data Extraction</h5>
-            <div className="bg-slate-100 p-3 rounded font-mono text-xs">
-              <div>Structured JSON extraction from AI responses</div>
-              <div className="text-slate-500 mt-1">Pattern matching and validation</div>
-            </div>
-          </div>
-          <div>
-            <h5 className="font-semibold text-slate-700 mb-2">Error Handling</h5>
-            <div className="bg-slate-100 p-3 rounded font-mono text-xs">
-              <div>Graceful fallback for malformed responses</div>
-              <div className="text-slate-500 mt-1">State preservation and recovery</div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
     </motion.div>
   );
 } 
