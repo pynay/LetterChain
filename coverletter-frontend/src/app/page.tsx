@@ -91,7 +91,7 @@ export default function Home() {
                   setIsLoading(false);
                 }
                 
-              } catch (parseError) {
+              } catch {
                 // Fallback to old format for backward compatibility
                 if (msg.startsWith('FINAL_COVER_LETTER::')) {
                   const jsonStr = msg.replace('FINAL_COVER_LETTER::', '');
