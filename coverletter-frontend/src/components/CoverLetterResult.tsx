@@ -392,9 +392,12 @@ export default function CoverLetterResult({
                     <p className="text-xs text-emerald-green font-medium mb-1">📋 Letter Structure</p>
                     <div className="text-xs text-slate-gray space-y-1">
                       <p>• <span className="font-medium">Opening:</span> Greeting and position statement</p>
-                      <p>• <span className="font-medium">Body:</span> Relevant experiences and qualifications</p>
+                      <p>• <span className="font-medium">Body:</span> Relevant experiences, <span className='font-medium'>or</span> transferable skills and strengths honestly drawn from your resume</p>
                       <p>• <span className="font-medium">Closing:</span> Interest reinforcement and call to action</p>
                     </div>
+                    <p className="text-xs text-slate-gray mt-2">
+                      <span className="font-medium">Note:</span> If you don't have direct experience for the job, your letter will honestly highlight transferable skills, strengths, or relevant qualities from your resume. We never fabricate experience, but always do our best to connect your real background to the job requirements.
+                    </p>
                   </motion.div>
                   
                   {/* Rating and Feedback */}

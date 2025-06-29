@@ -191,17 +191,20 @@ Requirements:
 4. Closing: reinforce interest, connect to the company's mission, and invite further discussion.
 5. End with: "Sincerely, {user_name}"
 
-**CRITICAL HONESTY GUIDELINES:**
-- **NEVER fabricate, invent, or stretch experience** - only use information that is explicitly provided
-- **Be completely truthful** about the candidate's actual experience and skills
-- **Focus on transferable skills** - Show how existing experience applies to the new role
-- **Be specific about skills** - Programming, analysis, teamwork, communication, etc.
-- **Highlight learning ability** - Demonstrate adaptability and growth mindset
-- **Use concrete examples** - Reference specific projects, courses, or experiences from the resume
+**STRICT GUIDELINES:**
+- **NEVER fabricate, invent, or stretch experience** — only use information that is explicitly provided. Do not hallucinate or make up any experience, skills, or qualifications.
+- **If there are no direct experience matches, write an honest cover letter that highlights any transferable skills, strengths, or relevant qualities from the resume that could apply to the job. Do your best to connect the candidate's real background to the job requirements.**
+- **Do NOT include language that highlights flaws, gaps, or self-doubt** (e.g., "While I am still developing...", "Although I lack...", "I am early in my career", "I have limited experience in...").
+- **Do NOT include self-disqualifying or underconfident language**. Focus on strengths, achievements, and readiness.
+- **Be completely truthful and specific** about the candidate's actual experience and skills.
+- **Focus on transferable skills** — Show how existing experience applies to the new role.
+- **Be specific about skills** — Programming, analysis, teamwork, communication, etc.
+- **Highlight learning ability** — Demonstrate adaptability and growth mindset, but only if supported by the resume.
+- **Use concrete examples** — Reference specific projects, courses, or experiences from the resume.
 - **Maintain a {tone} tone throughout**
 - **Be concise and direct, avoiding flowery language**
 - **Emphasize potential and transferability** rather than direct experience matches
-- **PRIORITIZE HONESTY OVER PERFECTION** - It's better to be honest about limitations than to fabricate experience
+- **PRIORITIZE HONESTY OVER PERFECTION** — It's better to be honest about limitations than to fabricate experience
 
 **CONFIDENCE AND TONE GUIDELINES:**
 - **Always present the candidate in a confident, positive light**
@@ -244,25 +247,30 @@ def cover_letter_validator_node(state: Dict[str, Any]) -> Dict[str, Any]:
     letter = state["cover_letter"]
     job_info = state["job_info"]
     
-    system_prompt = """You are a strict and intelligent QA assistant for AI-generated cover letters.
+    system_prompt = """You are a very strict and intelligent QA assistant for AI-generated cover letters.
 
 Evaluate the letter using these criteria:
 
-1. **HONESTY AND TRUTHFULNESS** — Does the letter honestly represent the candidate's experience without ANY fabrication?
+1. **HONESTY AND TRUTHFULNESS** — Does the letter honestly represent the candidate's experience without ANY fabrication, exaggeration, or hallucination? Even minor exaggerations, vague claims, or made-up details should be flagged.
 2. **Company and Job Mention** — Does it clearly mention the company name and job title?
-3. **Transferable Skills Focus** — Does it effectively connect the candidate's background to the job through transferable skills?
-4. **Tone and Professionalism** — Is the tone appropriate, professional, and confident?
-5. **Length and Structure** — Is it well-structured and appropriately sized (250-350 words)?
+3. **Transferable Skills Focus** — Does it effectively connect the candidate's background to the job through specific, concrete transferable skills? Generic or overly flattering language should be flagged.
+4. **Tone and Professionalism** — Is the tone appropriate, professional, and confident? Letters that are too generic, overly flattering, or lack specific, relevant details should be rejected.
+5. **Length and Structure** — Is it well-structured and appropriately sized (250-350 words)? Letters that are too short, too long, or poorly structured should be rejected.
+6. **NO SELF-DISQUALIFYING OR FLAW-HIGHLIGHTING LANGUAGE** — REJECT any letter that includes language about flaws, gaps, self-doubt, or underconfidence (e.g., "While I am still developing...", "Although I lack...", "I am early in my career", "I have limited experience in..."). The letter should focus on strengths and achievements.
+7. **TRANSFERABLE SKILLS ARE ACCEPTABLE** — If there are no direct experience matches, it is acceptable for the letter to focus on transferable skills or general strengths from the resume, as long as it does not fabricate or exaggerate. Only reject if the letter fabricates, exaggerates, or is completely irrelevant.
 
 Return a JSON object with:
 - "valid": true or false
 - "issues": list of concrete problems if found
 - "score": quality score from 0.0 to 1.0
 
-**CRITICAL HONESTY RULES**: 
-- **REJECT letters** that make ANY false claims about experience, skills, or qualifications
-- **ACCEPT letters** that are honest about limitations and focus on transferable skills
-- **PRIORITIZE HONESTY OVER PERFECTION** - A truthful letter with gaps is better than a fabricated perfect letter"""
+**STRICT HONESTY RULES**:
+- **REJECT letters** that make ANY false, exaggerated, or hallucinated claims about experience, skills, or qualifications
+- **REJECT letters** that are generic, vague, or lack specific, relevant details
+- **REJECT letters** that use overly flattering or flowery language without evidence
+- **REJECT letters** that include self-disqualifying, flaw-highlighting, or underconfident language
+- **ACCEPT letters** that are honest, specific, and focused on transferable skills and strengths, even if there are no direct experience matches
+- **PRIORITIZE HONESTY AND SPECIFICITY OVER PERFECTION** — A truthful, specific letter with gaps is better than a generic or fabricated perfect letter"""
     
     prompt = f"{system_prompt}\n\n### Cover Letter:\n{letter}\n\n### Job Info:\n{json.dumps(job_info, indent=2)}"
     
