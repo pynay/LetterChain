@@ -27,9 +27,9 @@ class Settings(BaseSettings):
     ENABLE_TRACING: bool = True
     
     # File Upload Limits
-    MAX_FILE_SIZE: int = 2 * 1024 * 1024  # 2MB
-    ALLOWED_EXTENSIONS: set = {".pdf", ".txt"}
-    ALLOWED_MIME_TYPES: set = {"application/pdf", "text/plain"}
+    MAX_FILE_SIZE: int = 5 * 1024 * 1024  # 5MB
+    ALLOWED_EXTENSIONS: set = {".pdf", ".txt", ".docx"}
+    ALLOWED_MIME_TYPES: set = {"application/pdf", "text/plain", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
     
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = 5

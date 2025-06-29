@@ -73,6 +73,8 @@ class FileService:
         try:
             if file.filename.lower().endswith(".pdf"):
                 return FileService._extract_pdf_text(file_bytes)
+            elif file.filename.lower().endswith(".docx"):
+                return FileService._extract_docx_text(file_bytes)
             else:
                 return file_bytes.decode(errors="ignore")
         except Exception as e:
@@ -106,6 +108,42 @@ class FileService:
         except Exception as e:
             logger.error(f"PDF processing failed: {str(e)}")
             raise ValueError(f"Failed to process PDF: {str(e)}")
+    
+    @staticmethod
+    def _extract_docx_text(file_bytes: bytes) -> str:
+        """Extract text from Word document (.docx) file"""
+        try:
+            from docx import Document
+            
+            doc = Document(io.BytesIO(file_bytes))
+            text_parts = []
+            
+            # Extract text from paragraphs
+            for paragraph in doc.paragraphs:
+                if paragraph.text.strip():
+                    text_parts.append(paragraph.text)
+            
+            # Extract text from tables
+            for table in doc.tables:
+                for row in table.rows:
+                    row_text = []
+                    for cell in row.cells:
+                        if cell.text.strip():
+                            row_text.append(cell.text.strip())
+                    if row_text:
+                        text_parts.append(" | ".join(row_text))
+            
+            if not text_parts:
+                raise ValueError("No text could be extracted from Word document")
+            
+            return "\n".join(text_parts)
+            
+        except ImportError:
+            logger.error("python-docx library not installed")
+            raise ValueError("Word document processing not available - python-docx library required")
+        except Exception as e:
+            logger.error(f"Word document processing failed: {str(e)}")
+            raise ValueError(f"Failed to process Word document: {str(e)}")
     
     @staticmethod
     def generate_file_hash(content: str) -> str:

@@ -83,10 +83,10 @@ export default function CoverLetterForm({ onSubmit, isLoading }: CoverLetterForm
       {/* Resume Upload */}
       <motion.div variants={itemVariants}>
         <label htmlFor="resume" className="block text-sm font-medium text-navy-blue mb-2">
-          Resume (PDF or TXT)
+          Resume (PDF, DOCX, or TXT)
         </label>
         <p className="text-xs text-slate-gray mb-2">
-          Upload your resume in PDF or text format. We&apos;ll extract your experience and skills to match with the job.
+          Upload your resume in PDF, Word, or text format. We&apos;ll extract your experience and skills to match with the job.
         </p>
         <motion.div
           whileHover={{ scale: 1.02 }}
@@ -96,7 +96,7 @@ export default function CoverLetterForm({ onSubmit, isLoading }: CoverLetterForm
             ref={fileInputRef}
             type="file"
             id="resume"
-            accept=".pdf,.txt"
+            accept=".pdf,.docx,.txt"
             onChange={handleFileChange}
             className="file-input-styled"
             required

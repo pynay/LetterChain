@@ -180,6 +180,15 @@ export default function Home() {
     }
   };
 
+  const resetHome = () => {
+    setCoverLetter('');
+    setError('');
+    setHasError(false);
+    setShowFeedback(false);
+    setProgressMessage('');
+    setOriginalFormData(null);
+  };
+
   return (
     <motion.main 
       className="min-h-screen bg-gradient-to-br from-gray-50 to-slate-100 py-8 px-4"
@@ -187,11 +196,11 @@ export default function Home() {
       initial="hidden"
       animate="visible"
     >
-      <div className="max-w-xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         {/* Show the form if not loading and no cover letter */}
         {(!isLoading && !coverLetter && !hasError) && (
           <motion.div
-            className="bg-white rounded-2xl shadow-lg border border-neutral-200/50 p-8"
+            className="bg-white rounded-2xl shadow-lg border border-neutral-200/50 p-12"
             variants={itemVariants}
           >
             <CoverLetterForm
@@ -202,9 +211,9 @@ export default function Home() {
         )}
 
         {/* Show the result/progress if loading or after generation */}
-        {(isLoading || coverLetter || hasError) && (
+        {(isLoading || coverLetter || hasError) &&
           <motion.div
-            className="relative bg-white rounded-2xl shadow-lg border border-neutral-200/50 p-8 max-w-4xl mx-auto"
+            className="relative bg-white rounded-2xl shadow-lg border border-neutral-200/50 p-12 max-w-3xl mx-auto"
             variants={itemVariants}
           >
             {/* Start Over button at top, centered */}
@@ -212,14 +221,7 @@ export default function Home() {
               <div className="flex justify-center mb-8">
                 <button
                   className="btn-accent text-base px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-md"
-                  onClick={() => {
-                    setCoverLetter('');
-                    setError('');
-                    setHasError(false);
-                    setShowFeedback(false);
-                    setProgressMessage('');
-                    setOriginalFormData(null);
-                  }}
+                  onClick={resetHome}
                   title="Start Over"
                 >
                   <span className="text-lg">🔄</span>
@@ -237,7 +239,7 @@ export default function Home() {
               progressMessage={progressMessage}
             />
           </motion.div>
-        )}
+        }
       </div>
 
       {/* Agents Explanation Section */}

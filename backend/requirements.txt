@@ -15,6 +15,7 @@ anthropic>=0.16.0
 pydantic
 pydantic-settings
 PyPDF2==3.0.1
+python-docx==1.1.0
 
 # Caching and storage
 redis==5.0.1

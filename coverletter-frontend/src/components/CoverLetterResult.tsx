@@ -128,6 +128,16 @@ export default function CoverLetterResult({
       initial="hidden"
       animate="visible"
     >
+      {/* Disclaimer */}
+      <motion.div
+        className="mb-3 px-4 py-2 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded shadow-sm text-xs"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <span className="font-semibold">Note:</span> Generating your cover letter may take up to 30 seconds, especially during busy times.
+      </motion.div>
+
       <motion.div variants={itemVariants} className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold text-navy-blue tracking-tight">Your Cover Letter</h2>
         <AnimatePresence>
@@ -154,8 +164,9 @@ export default function CoverLetterResult({
       </motion.div>
 
       <motion.div className="flex-1 flex flex-row gap-4">
+        {/* Action Buttons: Always visible if coverLetter exists */}
         <div className="flex flex-col gap-2 items-center justify-start pt-2">
-          {coverLetter && !showFeedback && (
+          {coverLetter && (
             <>
               <motion.button
                 onClick={handleCopy}

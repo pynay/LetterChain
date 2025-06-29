@@ -201,7 +201,16 @@ Requirements:
 - **Maintain a {tone} tone throughout**
 - **Be concise and direct, avoiding flowery language**
 - **Emphasize potential and transferability** rather than direct experience matches
-- **PRIORITIZE HONESTY OVER PERFECTION** - It's better to be honest about limitations than to fabricate experience"""
+- **PRIORITIZE HONESTY OVER PERFECTION** - It's better to be honest about limitations than to fabricate experience
+
+**CONFIDENCE AND TONE GUIDELINES:**
+- **Always present the candidate in a confident, positive light**
+- **Do not include language that downplays abilities or suggests unqualification**
+- **Avoid phrases like "While I am still developing..." or "Although I lack..."**
+- **If mentioning skills that are being developed, frame them as strengths or evidence of adaptability**
+- **Focus on what the candidate CAN do and WILL contribute, not what they cannot do**
+- **Use language that shows eagerness to learn and grow, not inadequacy**
+- **Maintain enthusiasm and conviction throughout the letter**"""
     
     prompt = f"{system_prompt}\n\n### Job Description:\n{json.dumps(job_info, indent=2)}\n\n### Matched Experiences:\n{json.dumps(experiences, indent=2)}"
     
