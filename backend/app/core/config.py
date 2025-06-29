@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     
     # Security (REQUIRED in production)
     SECRET_KEY: str
+    API_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # External Services (REQUIRED in production)

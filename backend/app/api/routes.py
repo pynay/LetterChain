@@ -1,8 +1,10 @@
-from fastapi import APIRouter, UploadFile, Form, Depends, HTTPException, status
+from fastapi import APIRouter, UploadFile, Form, Depends, HTTPException, status, Request
 from fastapi.responses import PlainTextResponse, JSONResponse
 from typing import Optional
 import logging
 from datetime import datetime
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from app.core.tracing import tracing_service
 from app.services.graph_service import GraphService
 from app.services.file_service import file_service
@@ -11,13 +13,18 @@ from app.models.schemas import (
     CoverLetterRequest, CoverLetterResponse, FeedbackRequest,
     ValidationResult, ErrorResponse, ToneEnum
 )
+from app.api.dependencies import verify_api_key
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-@router.post("/generate", response_model=CoverLetterResponse)
+def get_limiter(request: Request):
+    return request.app.state.limiter
+
+@router.post("/generate", response_model=CoverLetterResponse, dependencies=[Depends(verify_api_key)])
 @tracing_service.trace_api_request("generate_cover_letter")
 async def generate_cover_letter(
+    request: Request,
     resume: UploadFile,
     job: UploadFile,
     tone: ToneEnum = Form(ToneEnum.PROFESSIONAL),
@@ -33,6 +40,10 @@ async def generate_cover_letter(
     4. Runs the LangGraph workflow
     5. Returns the generated cover letter with metadata
     """
+
+    # Rate limiting
+    limiter = get_limiter(request)
+    await limiter.rate_limit("5/minute", key_func=get_remote_address)(request)
 
     try: 
         resume_bytes = await resume.read()
@@ -121,9 +132,10 @@ async def generate_cover_letter(
             detail="Internal server error"
         )
 
-@router.post("/generate-stream")
+@router.post("/generate-stream", dependencies=[Depends(verify_api_key)])
 @tracing_service.trace_api_request("generate_cover_letter_stream")
 async def generate_cover_letter_stream(
+    request: Request,
     resume: UploadFile,
     job: UploadFile,
     tone: ToneEnum = Form(ToneEnum.PROFESSIONAL),
@@ -137,6 +149,10 @@ async def generate_cover_letter_stream(
     """
     from fastapi.responses import StreamingResponse
     import json
+
+    # Rate limiting
+    limiter = get_limiter(request)
+    await limiter.rate_limit("5/minute", key_func=get_remote_address)(request)
 
     async def event_generator():
         try:
@@ -173,10 +189,11 @@ async def generate_cover_letter_stream(
         headers={"Cache-Control": "no-cache", "Connection": "keep-alive"}
     )
 
-@router.post("/feedback")
+@router.post("/feedback", dependencies=[Depends(verify_api_key)])
 @tracing_service.trace_api_request("provide_feedback")
 async def provide_feedback(
-    request: FeedbackRequest,
+    request: Request,
+    feedback_request: FeedbackRequest,
     graph_service: GraphService = Depends()
 ):
     """
@@ -186,14 +203,18 @@ async def provide_feedback(
     which can be used to improve the AI models and workflow.
     """
     
+    # Rate limiting
+    limiter = get_limiter(request)
+    await limiter.rate_limit("10/minute", key_func=get_remote_address)(request)
+
     try:
         # Create state with feedback
         state = {
-            "resume_posting": request.resume_text,
-            "job_posting": request.job_text,
-            "tone": request.tone.value,
-            "cover_letter": request.cover_letter,
-            "user_feedback": request.user_feedback,
+            "resume_posting": feedback_request.resume_text,
+            "job_posting": feedback_request.job_text,
+            "tone": feedback_request.tone.value,
+            "cover_letter": feedback_request.cover_letter,
+            "user_feedback": feedback_request.user_feedback,
             "feedback_mode": True
         }
         
