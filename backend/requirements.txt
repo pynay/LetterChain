@@ -25,3 +25,6 @@ langfuse==3.0.7
 
 # Utilities
 python-dotenv==1.0.0
+
+# Testing (minimal)
+pytest>=7.4.0
