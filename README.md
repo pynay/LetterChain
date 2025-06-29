@@ -6,7 +6,6 @@ Generate confident, tailored cover letters in seconds using AI! Upload your resu
 
 ## 🚀 Features
 - **Multi-format Resume Support:** Upload PDF, Word (.docx), or plain text resumes
-- **Streaming Generation:** See your cover letter generated in real time
 - **AI-Powered:** Uses Anthropic Claude for high-quality, context-aware writing
 - **Customizable Tone:** Choose from professional, confident, conversational, and more
 - **Honest & Confident Output:** No fabricated experience, always positive and tailored
