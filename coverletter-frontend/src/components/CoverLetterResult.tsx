@@ -396,7 +396,7 @@ export default function CoverLetterResult({
                       <p>• <span className="font-medium">Closing:</span> Interest reinforcement and call to action</p>
                     </div>
                     <p className="text-xs text-slate-gray mt-2">
-                      <span className="font-medium">Note:</span> If you don't have direct experience for the job, your letter will honestly highlight transferable skills, strengths, or relevant qualities from your resume. We never fabricate experience, but always do our best to connect your real background to the job requirements.
+                      <span className="font-medium">Note:</span> If you don&apos;t have direct experience for the job, your letter will honestly highlight transferable skills, strengths, or relevant qualities from your resume. We never fabricate experience, but always do our best to connect your real background to the job requirements.
                     </p>
                   </motion.div>
                   
