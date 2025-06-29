@@ -1,6 +1,20 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 import logging
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Debug: Check if Langfuse environment variables are loaded
+print("=== ENVIRONMENT VARIABLES DEBUG ===")
+print(f"LANGFUSE_PUBLIC_KEY: {os.getenv('LANGFUSE_PUBLIC_KEY', 'NOT SET')}")
+print(f"LANGFUSE_SECRET_KEY: {os.getenv('LANGFUSE_SECRET_KEY', 'NOT SET')[:10]}..." if os.getenv('LANGFUSE_SECRET_KEY') else "LANGFUSE_SECRET_KEY: NOT SET")
+print(f"LANGFUSE_HOST: {os.getenv('LANGFUSE_HOST', 'NOT SET')}")
+print(f"ANTHROPIC_API_KEY: {os.getenv('ANTHROPIC_API_KEY', 'NOT SET')[:10]}..." if os.getenv('ANTHROPIC_API_KEY') else "ANTHROPIC_API_KEY: NOT SET")
+print("==================================")
+
 from app.api.routes import router
 from app.core.config import settings
 from app.core.tracing import tracing_service

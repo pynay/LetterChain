@@ -32,7 +32,7 @@ export default function Home() {
       data.append('job', jobFile);
       data.append('tone', formData.tone);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate-stream`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/generate-stream`, {
         method: 'POST',
         body: data,
       });
@@ -57,25 +57,61 @@ export default function Home() {
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             const msg = line.slice(6);
-            if (msg.startsWith('FINAL_COVER_LETTER::')) {
-              const jsonStr = msg.replace('FINAL_COVER_LETTER::', '');
-              try {
-                const obj = JSON.parse(jsonStr);
-                setCoverLetter(obj.cover_letter);
-                setShowFeedback(true);
-              } catch {
-                setError('Error parsing cover letter result');
-                setHasError(true);
-              }
-            } else if (msg.startsWith('ERROR::')) {
-              const errorMsg = msg.replace('ERROR::', '');
-              setError(errorMsg);
-              setHasError(true);
-              setIsLoading(false);
-            } else if (msg === 'done') {
+            
+            // Handle the new backend format with JSON messages
+            if (msg === 'done') {
               setIsLoading(false);
             } else {
-              setProgressMessage(msg);
+              try {
+                const jsonData = JSON.parse(msg);
+                
+                // Handle status updates
+                if (jsonData.status) {
+                  setProgressMessage(jsonData.status);
+                }
+                
+                // Handle final result with cover letter
+                if (jsonData.cover_letter) {
+                  setCoverLetter(jsonData.cover_letter);
+                  setShowFeedback(true);
+                  setIsLoading(false);
+                }
+                
+                // Handle error messages
+                if (jsonData.error) {
+                  setError(jsonData.error.message || 'An error occurred');
+                  setHasError(true);
+                  setIsLoading(false);
+                }
+                
+                // Handle the full state object (backend sends this at the end)
+                if (jsonData.resume_posting && jsonData.job_posting && jsonData.cover_letter) {
+                  setCoverLetter(jsonData.cover_letter);
+                  setShowFeedback(true);
+                  setIsLoading(false);
+                }
+                
+              } catch (parseError) {
+                // Fallback to old format for backward compatibility
+                if (msg.startsWith('FINAL_COVER_LETTER::')) {
+                  const jsonStr = msg.replace('FINAL_COVER_LETTER::', '');
+                  try {
+                    const obj = JSON.parse(jsonStr);
+                    setCoverLetter(obj.cover_letter);
+                    setShowFeedback(true);
+                  } catch {
+                    setError('Error parsing cover letter result');
+                    setHasError(true);
+                  }
+                } else if (msg.startsWith('ERROR::')) {
+                  const errorMsg = msg.replace('ERROR::', '');
+                  setError(errorMsg);
+                  setHasError(true);
+                  setIsLoading(false);
+                } else {
+                  setProgressMessage(msg);
+                }
+              }
             }
           }
         }

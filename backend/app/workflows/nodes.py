@@ -98,14 +98,22 @@ def resume_parser_node(state: Dict[str, Any]) -> Dict[str, Any]:
 @tracing_service.trace_node("job_parser")
 def job_parser_node(state: Dict[str, Any]) -> Dict[str, Any]:
     """Parse job description into structured data"""
-    
     job_text = state["job_posting"]
-    
     try:
         parsed_job = ai_service.parse_job(job_text)
-        state["job_info"] = parsed_job
+        logger.info(f"job_parser_node: parsed_job = {parsed_job}")
+        if not parsed_job or not isinstance(parsed_job, dict):
+            logger.error("job_parser_node: parse_job returned None or invalid data")
+            # Provide fallback data
+            state["job_info"] = {
+                "title": "Position",
+                "company": "Company",
+                "requirements": [],
+                "responsibilities": []
+            }
+        else:
+            state["job_info"] = parsed_job
         return state
-        
     except Exception as e:
         logger.error(f"Job parsing failed: {str(e)}")
         # Provide fallback data

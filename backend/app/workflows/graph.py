@@ -43,9 +43,8 @@ def create_cover_letter_graph() -> StateGraph:
     
     def parsing_branch(state: Dict[str, Any]) -> str:
         """Route after parsing is complete"""
-        # Both resume and job should be parsed by now
-        if "resume_info" in state and "job_info" in state:
-            return "parse_job"  # Continue to job parsing
+        if "resume_info" in state:
+            return "parse_job"
         return "error_handler"
     
     def job_parsing_branch(state: Dict[str, Any]) -> str:
@@ -133,8 +132,9 @@ def create_cover_letter_graph() -> StateGraph:
 
 def error_handler_node(state: Dict[str, Any]) -> Dict[str, Any]:
     """Handle errors in the workflow"""
-    logger.error("Workflow error occurred", extra={"state": StateValidator.get_state_summary(state)})
-    
+    import traceback
+    logger.error("Workflow error occurred in error_handler_node", extra={"state": StateValidator.get_state_summary(state)})
+    logger.error(f"Full state at error: {state}")
     # Add error information to state
     state["error"] = {
         "message": "Workflow execution failed",
@@ -142,7 +142,6 @@ def error_handler_node(state: Dict[str, Any]) -> Dict[str, Any]:
         "validation_error": state.get("validation_error", {}),
         "state_summary": StateValidator.get_state_summary(state)
     }
-    
     return state
 
 def finish_node(state: Dict[str, Any]) -> Dict[str, Any]:
@@ -184,7 +183,7 @@ def invoke_graph(state: Dict[str, Any]) -> Dict[str, Any]:
         return result
         
     except Exception as e:
-        logger.error(f"Graph invocation failed: {str(e)}")
+        logger.error(f"Graph invocation failed: {str(e)}", exc_info=True)
         return {
             "error": {
                 "message": "Workflow execution failed",
