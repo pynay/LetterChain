@@ -1,6 +1,6 @@
 # ✉️ AI-Powered Cover Letter Generator
 
-Generate confident, tailored cover letters in seconds using AI! Upload your resume (PDF, DOCX, or TXT) and a job description, and get a professional, human-like cover letter—instantly.
+Generate confident, tailored cover letters in seconds using AI! Upload your resume (PDF, DOCX, or TXT) and a job description, and get a professional, personalized cover letter—instantly.
 
 ---
 
