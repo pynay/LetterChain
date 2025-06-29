@@ -170,11 +170,8 @@ export default function CoverLetterForm({ onSubmit, isLoading }: CoverLetterForm
             <option value="Confident, enthusiastic, and results-oriented. Emphasizes achievements and impact.">
               💪 Confident & Enthusiastic — Bold and achievement-focused
             </option>
-            <option value="Conversational, authentic, and personable. Shows personality while remaining professional.">
-              💬 Conversational & Authentic — Warm and personable
-            </option>
-            <option value="Concise, direct, and focused on key qualifications and achievements.">
-              ⚡ Concise & Direct — Clear and to the point
+            <option value="Creative, innovative, and forward-thinking. Shows unique perspective and problem-solving approach.">
+              🚀 Creative & Innovative — Unique perspective and problem-solving
             </option>
           </select>
         </motion.div>

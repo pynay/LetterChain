@@ -14,12 +14,18 @@ from app.models.schemas import (
     ValidationResult, ErrorResponse, ToneEnum
 )
 from app.api.dependencies import verify_api_key
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 def get_limiter(request: Request):
     return request.app.state.limiter
+
+@router.options("/generate")
+async def options_generate():
+    """Handle CORS preflight for generate endpoint - no auth required"""
+    return {"message": "OK"}
 
 @router.post("/generate", response_model=CoverLetterResponse, dependencies=[Depends(verify_api_key)])
 @tracing_service.trace_api_request("generate_cover_letter")
@@ -40,10 +46,6 @@ async def generate_cover_letter(
     4. Runs the LangGraph workflow
     5. Returns the generated cover letter with metadata
     """
-
-    # Rate limiting
-    limiter = get_limiter(request)
-    await limiter.rate_limit("5/minute", key_func=get_remote_address)(request)
 
     try: 
         resume_bytes = await resume.read()
@@ -132,6 +134,11 @@ async def generate_cover_letter(
             detail="Internal server error"
         )
 
+@router.options("/generate-stream")
+async def options_generate_stream():
+    """Handle CORS preflight for streaming endpoint - no auth required"""
+    return {"message": "OK"}
+
 @router.post("/generate-stream", dependencies=[Depends(verify_api_key)])
 @tracing_service.trace_api_request("generate_cover_letter_stream")
 async def generate_cover_letter_stream(
@@ -149,10 +156,6 @@ async def generate_cover_letter_stream(
     """
     from fastapi.responses import StreamingResponse
     import json
-
-    # Rate limiting
-    limiter = get_limiter(request)
-    await limiter.rate_limit("5/minute", key_func=get_remote_address)(request)
 
     async def event_generator():
         try:
@@ -196,17 +199,8 @@ async def provide_feedback(
     feedback_request: FeedbackRequest,
     graph_service: GraphService = Depends()
 ):
-    """
-    Provide feedback on a generated cover letter to improve future generations.
+    """Provide feedback on a generated cover letter to improve future generations."""
     
-    This endpoint allows users to provide feedback on generated cover letters,
-    which can be used to improve the AI models and workflow.
-    """
-    
-    # Rate limiting
-    limiter = get_limiter(request)
-    await limiter.rate_limit("10/minute", key_func=get_remote_address)(request)
-
     try:
         # Create state with feedback
         state = {
@@ -241,6 +235,15 @@ async def provide_feedback(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
         )
+
+@router.get("/debug/cors")
+async def debug_cors():
+    """Debug endpoint to check CORS configuration"""
+    return {
+        "cors_origins": settings.BACKEND_CORS_ORIGINS,
+        "environment": "production" if not settings.DEBUG else "development",
+        "debug_mode": settings.DEBUG
+    }
 
 @router.get("/health")
 async def health_check():

@@ -34,6 +34,9 @@ export default function Home() {
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/generate-stream`, {
         method: 'POST',
+        headers: {
+          'X-API-Key': process.env.NEXT_PUBLIC_API_KEY || '',
+        },
         body: data,
       });
       if (!response.ok) {
@@ -141,8 +144,11 @@ export default function Home() {
       data.append('user_feedback', feedback);
       data.append('current_cover_letter', coverLetter);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/feedback`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/feedback`, {
         method: 'POST',
+        headers: {
+          'X-API-Key': process.env.NEXT_PUBLIC_API_KEY || '',
+        },
         body: data,
       });
 

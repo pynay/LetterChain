@@ -47,7 +47,21 @@ class Settings(BaseSettings):
     def split_cors_origins(cls, v):
         if isinstance(v, str):
             # Accept comma-separated string from .env
-            return [origin.strip() for origin in v.split(",") if origin.strip()]
+            origins = [origin.strip() for origin in v.split(",") if origin.strip()]
+            # Always include localhost for development
+            if "http://localhost:3000" not in origins:
+                origins.append("http://localhost:3000")
+            if "http://127.0.0.1:3000" not in origins:
+                origins.append("http://127.0.0.1:3000")
+            return origins
+        elif isinstance(v, list):
+            # If it's already a list, ensure localhost is included
+            origins = list(v)
+            if "http://localhost:3000" not in origins:
+                origins.append("http://localhost:3000")
+            if "http://127.0.0.1:3000" not in origins:
+                origins.append("http://127.0.0.1:3000")
+            return origins
         return v
     
     class Config:
