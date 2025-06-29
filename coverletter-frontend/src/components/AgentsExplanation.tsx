@@ -80,15 +80,6 @@ const technicalAgents = [
   }
 ];
 
-const langGraphFlow = [
-  { step: 1, node: 'parse_job', description: 'Job Parser Node', next: 'parse_resume' },
-  { step: 2, node: 'parse_resume', description: 'Resume Parser Node', next: 'match' },
-  { step: 3, node: 'match', description: 'Relevance Matcher Node', next: 'generate' },
-  { step: 4, node: 'generate', description: 'Cover Letter Generator', next: 'validate' },
-  { step: 5, node: 'validate', description: 'Validator Node', next: 'conditional' },
-  { step: 6, node: 'export', description: 'Export Node', next: 'finish' }
-];
-
 export default function AgentsExplanation() {
   return (
     <motion.div
@@ -127,7 +118,7 @@ export default function AgentsExplanation() {
               <ul className="list-disc ml-6 text-slate-600">
                 <li>Our system instantly reads and understands your resume—no manual reformatting required.</li>
                 <li>Advanced AI matches your experience to the job, then writes a tailored, confident cover letter in real time.</li>
-                <li>See your letter stream in live, so you're never left waiting in the dark.</li>
+                <li>See your letter stream in live, so you&apos;re never left waiting in the dark.</li>
                 <li>Want changes? Suggest improvements and get a new draft instantly—no need to start over.</li>
                 <li>All your data is processed securely and never used for training.</li>
               </ul>
@@ -139,7 +130,7 @@ export default function AgentsExplanation() {
               <ul className="list-disc ml-6 text-slate-600">
                 <li><span className="font-semibold text-emerald-green">Real-time AI:</span> See your cover letter generate as you watch.</li>
                 <li><span className="font-semibold text-emerald-green">Multi-format support:</span> Upload PDF, DOCX, or TXT resumes—no conversion needed.</li>
-                <li><span className="font-semibold text-emerald-green">Validation loop:</span> Every letter is double-checked by a second AI for quality and honesty. If it doesn't meet the bar, the system automatically revises and improves it before you see the result.</li>
+                <li><span className="font-semibold text-emerald-green">Validation loop:</span> Every letter is double-checked by a second AI for quality and honesty. If it doesn&apos;t meet the bar, the system automatically revises and improves it before you see the result.</li>
                 <li><span className="font-semibold text-emerald-green">Feedback loop:</span> Instantly refine your letter with your own suggestions.</li>
                 <li><span className="font-semibold text-emerald-green">Reliable & secure:</span> Built with robust cloud tech, so your data and experience are always safe.</li>
                 <li><span className="font-semibold text-emerald-green">Powered by top-tier AI:</span> Uses advanced models for the best results.</li>
