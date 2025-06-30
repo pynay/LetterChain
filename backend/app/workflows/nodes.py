@@ -14,6 +14,15 @@ def input_validation_node(state: Dict[str, Any]) -> Dict[str, Any]:
     resume_text = state["resume_posting"]
     job_posting = state["job_posting"]
     
+    # Basic length check first
+    if len(resume_text.strip()) < 100 or len(job_posting.strip()) < 100:
+        state["validation_failed"] = True
+        state["validation_error"] = {
+            "resume_issues": ["Resume too short"] if len(resume_text.strip()) < 100 else [],
+            "job_issues": ["Job description too short"] if len(job_posting.strip()) < 100 else []
+        }
+        return state
+    
     system_prompt = """You are a quality control assistant that validates whether uploaded documents are legitimate resumes and job descriptions.
 
 Return ONLY a JSON object with this structure:
@@ -24,19 +33,21 @@ Return ONLY a JSON object with this structure:
   "job_issues": ["list of specific problems with job description, if any"]
 }
 
-**Resume Validation Criteria:**
-- Contains personal information (name, contact details)
-- Lists work experience, education, or skills
-- Is not random text, code, or unrelated content
+**Resume Validation Criteria (BE LENIENT):**
+- Contains personal information (name, contact details) OR work experience/education/skills
+- Is not obviously random text, code, or completely unrelated content
 - Has reasonable length (at least 100 characters)
+- Accept various formats: bullet points, paragraphs, tables, etc.
+- Accept resumes with different structures and styles
 
-**Job Description Validation Criteria:**
-- Contains job title and company information
-- Lists responsibilities, requirements, or qualifications
-- Is not random text, code, or unrelated content
+**Job Description Validation Criteria (BE LENIENT):**
+- Contains job-related information (title, company, requirements, responsibilities, etc.)
+- Is not obviously random text, code, or completely unrelated content
 - Has reasonable length (at least 100 characters)
+- Accept various formats: formal job postings, informal descriptions, etc.
+- Accept job descriptions with administrative text, application instructions, etc.
 
-Be strict but fair. If either input is clearly not a resume or job description, mark it as invalid."""
+**BE GENEROUS AND LENIENT** - Only reject if the content is clearly not a resume or job description (like random text, code, or completely unrelated content). If in doubt, mark as valid."""
     
     prompt = f"{system_prompt}\n\n### Resume Text:\n{resume_text[:2000]}...\n\n### Job Description Text:\n{job_posting[:2000]}..."
     
@@ -63,8 +74,14 @@ Be strict but fair. If either input is clearly not a resume or job description, 
         
     except Exception as e:
         logger.error(f"Input validation failed: {str(e)}")
-        state["validation_failed"] = True
-        state["validation_error"] = {"error": str(e)}
+        # If AI validation fails, be lenient and accept the input
+        logger.info("AI validation failed, accepting input as valid")
+        state["input_validation"] = {
+            "resume_valid": True,
+            "job_valid": True,
+            "resume_issues": [],
+            "job_issues": []
+        }
         return state
 
 @tracing_service.trace_node("resume_parser")

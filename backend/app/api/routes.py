@@ -14,7 +14,7 @@ from app.models.schemas import (
     ValidationResult, ErrorResponse, ToneEnum
 )
 from app.api.dependencies import verify_api_key
-from app.core.config import settings
+from app.workflows.nodes import input_validation_node
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -235,15 +235,6 @@ async def provide_feedback(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
         )
-
-@router.get("/debug/cors")
-async def debug_cors():
-    """Debug endpoint to check CORS configuration"""
-    return {
-        "cors_origins": settings.BACKEND_CORS_ORIGINS,
-        "environment": "production" if not settings.DEBUG else "development",
-        "debug_mode": settings.DEBUG
-    }
 
 @router.get("/health")
 async def health_check():
