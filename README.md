@@ -10,7 +10,6 @@ Generate confident, tailored cover letters in seconds using AI! Upload your resu
 - **Customizable Tone:** Choose from professional, confident, conversational, and more
 - **Honest & Confident Output:** No fabricated experience, always positive and tailored
 - **Feedback Loop:** Suggest improvements and regenerate with your feedback
-- **Modern UI:** Built with Next.js, Tailwind CSS, and Framer Motion
 - **Observability:** Langfuse-powered tracing and analytics
 
 ---
