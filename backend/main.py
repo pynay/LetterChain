@@ -31,35 +31,28 @@ async def lifespan(app: FastAPI):
     
     # Initialize services
     try:
-        # Test Redis connection
         from app.services.cache_service import cache_service
-        cache_service._test_connection()
-        logger.info("Cache service initialized")
-        
-        # Test AI service
+        if cache_service._available:
+            logger.info("Cache service initialized (Redis connected)")
+        else:
+            logger.info("Cache service initialized (Redis disabled)")
         from app.services.ai_service import ai_service
         logger.info("AI service initialized")
-        
-        # Test tracing
         if settings.ENABLE_TRACING:
             logger.info("Tracing service initialized")
-        
     except Exception as e:
         logger.error(f"Service initialization failed: {str(e)}")
         raise
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down LetterChain API...")
-    
-    # Cleanup resources
     try:
-        # Close Redis connection
         from app.services.cache_service import cache_service
-        cache_service.redis_client.close()
-        logger.info("Cache service shutdown complete")
-        
+        if cache_service.redis_client:
+            cache_service.redis_client.close()
+            logger.info("Cache service shutdown complete")
     except Exception as e:
         logger.error(f"Shutdown cleanup failed: {str(e)}")
 

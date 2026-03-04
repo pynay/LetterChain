@@ -10,25 +10,35 @@ import json
 logger = logging.getLogger(__name__)
 
 class CacheService:
-    """Redis-based caching service with automatic serialization"""
+    """Redis-based caching service with automatic serialization. Redis is optional; if connection fails, cache is disabled and the app still runs."""
 
     def __init__(self):
-        self.redis_client = redis.from_url(
-            settings.REDIS_URL,
-            decode_responses=True,
-            socket_connect_timeout=5,
-            socket_timeout=5
-        )
-        self._test_connection()
-
-    def _test_connection(self):
-        """Test Redis connection on startup"""
+        self.redis_client = None
+        self._available = False
         try:
+            self.redis_client = redis.from_url(
+                settings.REDIS_URL,
+                decode_responses=True,
+                socket_connect_timeout=5,
+                socket_timeout=5
+            )
             self.redis_client.ping()
+            self._available = True
             logger.info("Redis connection established")
         except Exception as e:
-            logger.error(f"Redis connection failed: {str(e)}")
-            raise
+            logger.warning("Redis connection failed (cache disabled): %s", str(e))
+            self.redis_client = None
+            self._available = False
+
+    def _test_connection(self):
+        """Re-check Redis availability (no-op if already known unavailable)."""
+        if not self._available:
+            return
+        try:
+            self.redis_client.ping()
+        except Exception as e:
+            logger.warning("Redis connection check failed: %s", str(e))
+            self._available = False
     
 
     def _generate_key(self, prefix: str, content: str) -> str:
@@ -38,6 +48,8 @@ class CacheService:
     
     def get(self, key: str) -> Optional[Dict[str, Any]]:
         """Get value from cache with automatic JSON deserialization"""
+        if not self._available or not self.redis_client:
+            return None
         try:
             value = self.redis_client.get(key)
             if value:
@@ -46,7 +58,7 @@ class CacheService:
         except (json.JSONDecodeError, redis.RedisError) as e:
             logger.warning(f"Cache get failed for key {key}: {str(e)}")
             return None
-        
+
     def set(
         self,
         key: str,
@@ -54,15 +66,19 @@ class CacheService:
         expire_seconds: int = 86400  # 24 hours default
     ) -> bool:
         """Set value in cache with automatic JSON serialization"""
+        if not self._available or not self.redis_client:
+            return False
         try:
             serialized = json.dumps(value)
             return self.redis_client.setex(key, expire_seconds, serialized)
         except (TypeError, redis.RedisError) as e:
             logger.warning(f"Cache set failed for key {key}: {str(e)}")
             return False
-    
+
     def delete(self, key: str) -> bool:
         """Delete value from cache"""
+        if not self._available or not self.redis_client:
+            return False
         try:
             return bool(self.redis_client.delete(key))
         except redis.RedisError as e:
@@ -101,6 +117,8 @@ class CacheService:
     
     def get_cache_stats(self) -> Dict[str, Any]:
         """Get cache statistics for monitoring"""
+        if not self._available or not self.redis_client:
+            return {"status": "disabled", "message": "Redis not connected"}
         try:
             info = self.redis_client.info()
             return {
